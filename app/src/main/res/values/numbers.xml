@@ -1,0 +1,3 @@
+<resources>
+  <integer name="default_duration_seconds">900</integer>
+</resources>

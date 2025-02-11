@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,35 +18,39 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionTheme
 
 class MainActivity : ComponentActivity() {
+  private val timer = Timer(baseContext.resources.getInteger(R.integer.default_duration_seconds))
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
     enableEdgeToEdge()
     setContent {
       RacingRegistersCompanionTheme {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-          Greeting(
-            message = Message("Michael", "Hello"),
-            modifier = Modifier.padding(innerPadding)
+          RenderedTimer(
+            timer = timer, modifier = Modifier.padding(innerPadding)
           )
         }
       }
     }
+
+    timer.start()
   }
 }
 
 data class Message(val author: String, val body: String)
 
 @Composable
-fun Greeting(message: Message, modifier: Modifier = Modifier) {
+fun RenderedTimer(timer: Timer, modifier: Modifier = Modifier) {
   Row(
     modifier = modifier
       .padding(all = 8.dp)
@@ -56,38 +59,27 @@ fun Greeting(message: Message, modifier: Modifier = Modifier) {
     Image(
       painter = painterResource(R.drawable.circuit),
       contentDescription = "Circuit Image",
-      modifier = modifier
-        .size(40.dp)
+      modifier = modifier.size(40.dp)
     )
-    Column {
-      Text(
-        text = "Hi, my name is ${message.author}!",
-        modifier = modifier.padding(24.dp),
-      )
-      Spacer(modifier = modifier.width(8.dp))
-      Surface(shape = MaterialTheme.shapes.medium, shadowElevation = 1.dp) {
-        Text(
-          text = "My message is ${message.body}!",
-          color = MaterialTheme.colorScheme.secondary,
-          style = MaterialTheme.typography.bodySmall,
-          modifier = modifier.padding(24.dp)
-        )
-      }
-    }
+    Spacer(modifier = modifier.width(10.dp))
+
+    var currentTime = remember { mutableStateOf(timer.toString()) }
+    timer.subscribe(currentTime)
+
+    Text(text = currentTime.value)
   }
 }
 
 @Preview(name = "Light Mode")
 @Preview(
-  uiMode = Configuration.UI_MODE_NIGHT_YES,
-  showBackground = true,
-  name = "Dark Mode"
+  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
 )
 @Composable
 fun PreviewMessageCard() {
+  val timer = Timer(900)
   RacingRegistersCompanionTheme {
     Surface {
-      Greeting(message = Message("Michael", "Hello"))
+      RenderedTimer(timer = timer)
     }
   }
 }
