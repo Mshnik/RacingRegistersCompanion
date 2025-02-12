@@ -3,17 +3,17 @@
   <font
     android:fontStyle="normal"
     android:fontWeight="400"
-    android:font="@font/AnonymousProRegular"/>
+    android:font="@font/anonymous_pro_regular"/>
   <font
       android:fontStyle="italic"
       android:fontWeight="400"
-      android:font="@font/AnonymousProItalic"/>
+      android:font="@font/anonymous_pro_italic"/>
   <font
       android:fontStyle="normal"
       android:fontWeight="700"
-      android:font="@font/AnonymousProBold"/>
+      android:font="@font/anonymous_pro_bold"/>
   <font
       android:fontStyle="italic"
       android:fontWeight="700"
-      android:font="@font/AnonymousProBoldItalic"/>
+      android:font="@font/anonymous_pro_bold_italic"/>
 </font-family>
