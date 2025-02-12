@@ -21,6 +21,15 @@ class Timer(internal val initialSeconds: Int, private val delay: Long = 1000L) {
     deactivate()
   }
 
+  /** Either starts or pauses this timer, toggling between states. */
+  fun toggle() {
+    if (timer == null) {
+      start()
+    } else {
+      pause()
+    }
+  }
+
   /** Resets this timer. Does nothing if not yet started. */
   fun reset() {
     deactivate()

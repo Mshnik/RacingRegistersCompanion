@@ -54,7 +54,7 @@ val Typography = Typography(
     fontFamily = mPlus1Code
   ),
   labelLarge = DefaultTypography.labelLarge.copy(
-    fontFamily = mPlus1Code
+    fontFamily = sixtyFour
   ),
   labelMedium = DefaultTypography.labelMedium.copy(
     fontFamily = mPlus1Code
