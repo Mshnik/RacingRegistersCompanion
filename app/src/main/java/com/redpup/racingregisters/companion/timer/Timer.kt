@@ -9,7 +9,7 @@ import java.util.Timer as JavaTimer
 class Timer(internal val initialSeconds: Int, private val delay: Long = 1000L) {
   var secondsRemaining = initialSeconds; internal set
   var timer: JavaTimer? = null; private set
-  private var subscriber: (() -> Unit)? = null
+  private val subscribers = mutableListOf<() -> Unit>()
 
   /** Starts this timer. Does nothing if already started. */
   fun start() {
@@ -39,7 +39,7 @@ class Timer(internal val initialSeconds: Int, private val delay: Long = 1000L) {
   /** Activates this timer. Does nothing if already active or if this timer is already elapsed. */
   private fun activate() {
     if (timer == null && secondsRemaining > 0) {
-      timer = timer("Timer", true,  delay, delay) { tick() }
+      timer = timer("Timer", true, delay, delay) { tick() }
     }
   }
 
@@ -49,16 +49,25 @@ class Timer(internal val initialSeconds: Int, private val delay: Long = 1000L) {
     timer = null
   }
 
-  /** Sets the subscriber to this timer. This will be invoked on every tick. */
+  /**
+   * Sets the subscriber to this timer. This will be invoked on every tick.
+   *
+   * Composes with any existing subscriber.
+   */
   fun subscribe(sub: () -> Unit) {
-    subscriber = sub
+    subscribers.add(sub)
+  }
+
+  /** Clears any existing subscribers. */
+  fun clearSubscribers() {
+    subscribers.clear()
   }
 
   /** Timer tick that is invoked once a second. Invokes subscriber, if any. */
   @Synchronized
   private fun tick() {
     secondsRemaining--
-    subscriber?.invoke()
+    subscribers.forEach { it.invoke() }
 
     if (secondsRemaining == 0) {
       deactivate()
@@ -67,7 +76,7 @@ class Timer(internal val initialSeconds: Int, private val delay: Long = 1000L) {
 
   override fun toString(): String {
     val remaining = secondsRemaining
-    if (secondsRemaining == 0) {
+    if (remaining == 0) {
       return "DONE"
     }
 
