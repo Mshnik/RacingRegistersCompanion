@@ -6,24 +6,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,6 +36,7 @@ import com.redpup.racingregisters.companion.timer.Timer
 import com.redpup.racingregisters.companion.ui.theme.Green90
 import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionTheme
 import com.redpup.racingregisters.companion.ui.theme.White90
+import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
 import com.redpup.racingregisters.companion.ui.theme.sixtyFour
 
 class MainActivity : ComponentActivity() {
@@ -76,32 +68,26 @@ fun RenderScreen(timer: Timer, modifier: Modifier = Modifier) {
     RenderedTimer(
       timer = timer, modifier = modifier.height(100.dp)
     )
+    Spacer(Modifier.height(40.dp))
     RenderBreakContinueButton(timer)
   }
 }
 
 @Composable
 fun RenderedTimer(timer: Timer, modifier: Modifier = Modifier) {
-  Box(
-    modifier = modifier
-      .border(5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp))
-      .background(Color.Blue)
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
   ) {
-    Box(
-      modifier = modifier
-        .background(Color.Red)
-    ) {
-      val currentTime = remember { mutableStateOf(timer.toString()) }
-      val timerFont = TextStyle(
-        fontFamily = sixtyFour,
-        fontWeight = FontWeight.Bold,
-        fontSize = 50.sp,
-        lineHeight = 0.sp,
-        letterSpacing = 4.sp
-      )
-      timer.subscribe { currentTime.value = timer.toString() }
-      Text(text = currentTime.value, style = timerFont)
-    }
+    val currentTime = remember { mutableStateOf(timer.toString()) }
+    val timerFont = TextStyle(
+      fontFamily = mPlus1Code,
+      fontWeight = FontWeight.Bold,
+      fontSize = 100.sp,
+      lineHeight = 0.sp,
+      letterSpacing = 4.sp
+    )
+    timer.subscribe { currentTime.value = timer.toString() }
+    Text(text = currentTime.value, modifier = Modifier.padding(5.dp), style = timerFont)
   }
 }
 
@@ -117,16 +103,17 @@ fun RenderBreakContinueButton(
   var borderColor by remember { mutableStateOf(Color.Black) }
 
   fun updateColors() {
-    textColor = if (text == "BREAK") Color.Black else Green90
-    backgroundColor = if (text == "BREAK") White90 else Color.Black
-    borderColor = if (text == "BREAK") White90 else Green90
+    val isBreak = text == "BREAK"
+    textColor = if (isBreak) Color.Black else Green90
+    backgroundColor = if (isBreak) White90 else Color.Black
+    borderColor = if (isBreak) White90 else Green90
   }
   updateColors()
 
   val buttonFont = TextStyle(
     fontFamily = sixtyFour,
     fontWeight = FontWeight.Bold,
-    fontSize = 22.sp,
+    fontSize = 23.sp,
     lineHeight = 0.sp,
     letterSpacing = 2.sp
   )
@@ -145,7 +132,7 @@ fun RenderBreakContinueButton(
     shape = RoundedCornerShape(5.dp)
   ) {
     Text(
-      text, style = buttonFont, modifier = modifier
+      text, style = buttonFont, modifier = modifier.padding(0.dp, 15.dp)
     )
   }
 }
