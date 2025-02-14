@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.redpup.racingregisters.companion.timer.Timer
 import com.redpup.racingregisters.companion.ui.theme.Green90
 import com.redpup.racingregisters.companion.ui.theme.Grey50
+import com.redpup.racingregisters.companion.ui.theme.Grey90
 import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionTheme
 import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
@@ -84,17 +85,17 @@ fun RenderScreen(timer: Timer, modifier: Modifier = Modifier) {
 fun RenderBackground(timer: Timer) {
   val numBars = 10
   val numBarsTimes2 = numBars*2
-  var shift by remember { mutableStateOf(0) }
-  timer.subscribe { shift = timer.initialSeconds - timer.secondsRemaining }
+  var shift by remember { mutableStateOf(0.0F) }
+  timer.subscribeSubSecond { shift = timer.elapsedMillis() / 1000F }
 
   Canvas(modifier = Modifier.fillMaxSize()) {
     rotate(degrees = -45F) {
       val barWidth =
         (sqrt(size.width * size.width + size.height * size.height.toDouble()) / (numBars * 2)).toFloat()
       for (i in 0..numBarsTimes2) {
-        val xOffset = ((i * 2 + shift) % numBarsTimes2) * barWidth - size.width/2
+        val xOffset = ((i * 2 + shift) % numBarsTimes2) * barWidth - size.width*0.75F
         drawRect(
-          color = Grey50,
+          color = Grey90,
           topLeft = Offset(x = xOffset, y = -size.width/2),
           size = Size(barWidth, size.height + size.width)
         )
