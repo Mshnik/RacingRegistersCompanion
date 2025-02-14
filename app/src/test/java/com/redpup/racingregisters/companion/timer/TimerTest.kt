@@ -40,6 +40,13 @@ class TimerTest {
   }
 
   @Test
+  fun startDoesNotStartIfTimeIsElapsed() {
+    timer.secondsRemaining = 0
+    timer.start()
+    assertThat(timer.timer).isNull()
+  }
+
+  @Test
   fun startAndPauseStopsTimer() {
     timer.start()
     timer.pause()

@@ -36,9 +36,9 @@ class Timer(internal val initialSeconds: Int, private val delay: Long = 1000L) {
     secondsRemaining = initialSeconds
   }
 
-  /** Activates this timer. Does nothing if already active. */
+  /** Activates this timer. Does nothing if already active or if this timer is already elapsed. */
   private fun activate() {
-    if (timer == null) {
+    if (timer == null && secondsRemaining > 0) {
       timer = timer("Timer", true,  delay, delay) { tick() }
     }
   }
