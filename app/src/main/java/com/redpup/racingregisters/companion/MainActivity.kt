@@ -2,14 +2,14 @@ package com.redpup.racingregisters.companion
 
 import android.content.res.Configuration
 import android.os.Bundle
-import android.widget.LinearLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,12 +24,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,8 +49,8 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     setContent {
       RacingRegistersCompanionTheme {
-        Scaffold(modifier = Modifier.fillMaxSize()) {
-          innerPadding -> RenderScreen(timer, Modifier.padding(innerPadding))
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+          RenderScreen(timer, Modifier.padding(innerPadding))
         }
       }
     }
@@ -58,15 +59,17 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun RenderScreen(timer: Timer, modifier: Modifier = Modifier) {
-  Column {
-    Spacer(Modifier.height(20.dp))
+  Column(
+    modifier = Modifier
+      .padding(10.dp)
+      .background(androidx.compose.ui.graphics.Color.Red, shape = RectangleShape),
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) {
     RenderedTimer(
       timer = timer, modifier = modifier
     )
-    Spacer(Modifier.height(20.dp))
-    Row(modifier = modifier.fillMaxWidth()) {
-      RenderBreakContinueButton(timer)
-    }
+    RenderBreakContinueButton(timer)
   }
 }
 
@@ -105,14 +108,10 @@ fun RenderBreakContinueButton(
     onClick = {
       timer.toggle()
       buttonText = if (buttonText == "BREAK") "CONTINUE" else "BREAK"
-    },
-    modifier = modifier,
-    shape = RoundedCornerShape(5.dp)
+    }, modifier = modifier, shape = RoundedCornerShape(5.dp)
   ) {
     Text(
-      buttonText,
-      style = MaterialTheme.typography.labelLarge,
-      modifier = modifier
+      buttonText, style = MaterialTheme.typography.labelLarge, modifier = modifier
     )
   }
 }
@@ -124,7 +123,12 @@ fun RenderBreakContinueButton(
 fun PreviewRenderScreen() {
   val timer = Timer(900)
   RacingRegistersCompanionTheme {
-    RenderScreen(timer, Modifier.padding(5.dp).width(200.dp).height(100.dp))
+    RenderScreen(
+      timer, Modifier
+        .padding(5.dp)
+        .width(200.dp)
+        .height(100.dp)
+    )
   }
 }
 
