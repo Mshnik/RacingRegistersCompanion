@@ -94,5 +94,7 @@ class TimerTest {
     assertThat(timer.toString()).isEqualTo("1:40")
     timer.secondsRemaining = 62
     assertThat(timer.toString()).isEqualTo("1:02")
+    timer.secondsRemaining = 0
+    assertThat(timer.toString()).isEqualTo("DONE")
   }
 }

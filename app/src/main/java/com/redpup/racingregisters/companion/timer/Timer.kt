@@ -67,6 +67,10 @@ class Timer(internal val initialSeconds: Int, private val delay: Long = 1000L) {
 
   override fun toString(): String {
     val remaining = secondsRemaining
+    if (secondsRemaining == 0) {
+      return "DONE"
+    }
+
     val minutes = remaining / 60
     val seconds = remaining % 60
     if (seconds < 10) {
