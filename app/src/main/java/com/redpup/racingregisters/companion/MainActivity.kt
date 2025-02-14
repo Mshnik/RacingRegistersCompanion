@@ -10,12 +10,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -49,7 +51,7 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     setContent {
       RacingRegistersCompanionTheme {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Scaffold { innerPadding ->
           RenderScreen(timer, Modifier.padding(innerPadding))
         }
       }
@@ -60,9 +62,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun RenderScreen(timer: Timer, modifier: Modifier = Modifier) {
   Column(
-    modifier = Modifier
+    modifier = Modifier.fillMaxSize()
       .padding(10.dp)
-      .background(androidx.compose.ui.graphics.Color.Red, shape = RectangleShape),
+      // .background(androidx.compose.ui.graphics.Color.Red, shape = RectangleShape)
+    ,
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
@@ -112,22 +115,6 @@ fun RenderBreakContinueButton(
   ) {
     Text(
       buttonText, style = MaterialTheme.typography.labelLarge, modifier = modifier
-    )
-  }
-}
-
-@Preview(
-  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
-)
-@Composable
-fun PreviewRenderScreen() {
-  val timer = Timer(900)
-  RacingRegistersCompanionTheme {
-    RenderScreen(
-      timer, Modifier
-        .padding(5.dp)
-        .width(200.dp)
-        .height(100.dp)
     )
   }
 }
