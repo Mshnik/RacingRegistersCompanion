@@ -2,16 +2,21 @@ package com.redpup.racingregisters.companion
 
 import android.content.res.Configuration
 import android.os.Bundle
+import android.widget.LinearLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -43,17 +48,24 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     setContent {
       RacingRegistersCompanionTheme {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-          Column {
-            Spacer(Modifier.height(20.dp))
-            RenderedTimer(
-              timer = timer, modifier = Modifier.padding(innerPadding)
-            )
-            Spacer(Modifier.height(20.dp))
-            BreakContinueButton(timer)
-          }
+        Scaffold(modifier = Modifier.fillMaxSize()) {
+          innerPadding -> RenderScreen(timer, Modifier.padding(innerPadding))
         }
       }
+    }
+  }
+}
+
+@Composable
+fun RenderScreen(timer: Timer, modifier: Modifier = Modifier) {
+  Column {
+    Spacer(Modifier.height(20.dp))
+    RenderedTimer(
+      timer = timer, modifier = modifier
+    )
+    Spacer(Modifier.height(20.dp))
+    Row(modifier = modifier.fillMaxWidth()) {
+      RenderBreakContinueButton(timer)
     }
   }
 }
@@ -83,7 +95,7 @@ fun RenderedTimer(timer: Timer, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun BreakContinueButton(
+fun RenderBreakContinueButton(
   timer: Timer,
   modifier: Modifier = Modifier,
   initialText: String = "CONTINUE",
@@ -99,7 +111,8 @@ fun BreakContinueButton(
   ) {
     Text(
       buttonText,
-      style = MaterialTheme.typography.labelLarge
+      style = MaterialTheme.typography.labelLarge,
+      modifier = modifier
     )
   }
 }
@@ -108,12 +121,10 @@ fun BreakContinueButton(
   uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
 )
 @Composable
-fun PreviewRenderedTimer() {
+fun PreviewRenderScreen() {
   val timer = Timer(900)
   RacingRegistersCompanionTheme {
-    Surface {
-      RenderedTimer(timer = timer)
-    }
+    RenderScreen(timer, Modifier.padding(5.dp).width(200.dp).height(100.dp))
   }
 }
 
@@ -125,7 +136,7 @@ fun PreviewContinueButton() {
   val timer = Timer(900)
   RacingRegistersCompanionTheme {
     Surface {
-      BreakContinueButton(timer = timer, Modifier, "CONTINUE")
+      RenderBreakContinueButton(timer = timer, Modifier, "CONTINUE")
     }
   }
 }
@@ -138,7 +149,7 @@ fun PreviewBreakButton() {
   val timer = Timer(900)
   RacingRegistersCompanionTheme {
     Surface {
-      BreakContinueButton(timer = timer, Modifier, "BREAK")
+      RenderBreakContinueButton(timer = timer, Modifier, "BREAK")
     }
   }
 }
