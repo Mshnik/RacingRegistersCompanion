@@ -107,18 +107,21 @@ fun RenderBackground(timer: Timer) {
   }
 
   Canvas(modifier = Modifier.fillMaxSize()) {
+    val w = size.width
+    val halfW = w * 0.5F
+    val threeQuartersW = w * 0.75F
+    val h = size.height
     rotate(degrees = -45F) {
       val barWidth =
-        (sqrt(size.width * size.width + size.height * size.height.toDouble()) / (numBars * 2)).toFloat()
+        (sqrt(w * w + h * h.toDouble()) / (numBars * 2)).toFloat()
       val xShift = previousShiftWithFactor + (shift - previousShift) * shiftFactor
-      println("xOffset computation: $xShift = ($previousShiftWithFactor, $shift, $previousShift, $shiftFactor)")
       for (i in 0..numBarsTimes2) {
         val xOffset =
-          ((i * 2 + xShift) % numBarsTimes2) * barWidth - size.width * 0.75F
+          ((i * 2 + xShift) % numBarsTimes2) * barWidth - threeQuartersW
         drawRect(
           color = Grey90,
-          topLeft = Offset(x = xOffset, y = -size.width / 2),
-          size = Size(barWidth, size.height + size.width)
+          topLeft = Offset(x = xOffset, y = -halfW),
+          size = Size(barWidth, h + w)
         )
       }
     }
