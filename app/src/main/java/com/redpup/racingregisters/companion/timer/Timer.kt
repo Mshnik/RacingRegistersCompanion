@@ -36,6 +36,7 @@ class Timer(
 
   private val tickTime = 1000L / ticksPerSecond
   private val subscribers = ArrayListMultimap.create<Event, () -> Unit>()
+  private val subscriberLock = Object()
 
   /** The amount of milliseconds that have passed. */
   fun elapsedMillis(): Long {
@@ -132,16 +133,22 @@ class Timer(
    * Adds a subscriber to this timer for the given event.
    */
   fun subscribe(event: Event, sub: () -> Unit) {
-    subscribers.put(event, sub)
+    synchronized(subscriberLock) {
+      subscribers.put(event, sub)
+    }
   }
 
   /** Clears any existing subscribers. */
   fun clearSubscribers() {
-    subscribers.clear()
+    synchronized(subscriberLock) {
+      subscribers.clear()
+    }
   }
 
   /** Handles all subscribers registered for the given Event. */
   private fun handleSubscribers(event: Event) {
-    subscribers.get(event).forEach { it.invoke() }
+    synchronized(subscriberLock) {
+      subscribers.get(event).forEach { it.invoke() }
+    }
   }
 }
