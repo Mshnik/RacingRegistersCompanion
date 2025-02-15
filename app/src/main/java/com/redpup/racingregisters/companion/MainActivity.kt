@@ -53,6 +53,7 @@ import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionThe
 import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
 import com.redpup.racingregisters.companion.ui.theme.sixtyFour
+import kotlin.math.hypot
 import kotlin.math.sqrt
 
 class MainActivity : ComponentActivity() {
@@ -111,9 +112,9 @@ fun RenderBackground(timer: Timer) {
     val halfW = w * 0.5F
     val threeQuartersW = w * 0.75F
     val h = size.height
+    val hypotenuse = hypot(h, w)
     rotate(degrees = -45F) {
-      val barWidth =
-        (sqrt(w * w + h * h.toDouble()) / (numBars * 2)).toFloat()
+      val barWidth = hypotenuse / numBarsTimes2
       val xShift = previousShiftWithFactor + (shift - previousShift) * shiftFactor
       for (i in 0..numBarsTimes2) {
         val xOffset =
