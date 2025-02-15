@@ -7,7 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,11 +28,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.semantics.invisibleToUser
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -84,7 +92,7 @@ fun RenderScreen(timer: Timer, modifier: Modifier = Modifier) {
 @Composable
 fun RenderBackground(timer: Timer) {
   val numBars = 10
-  val numBarsTimes2 = numBars*2
+  val numBarsTimes2 = numBars * 2
   var shift by remember { mutableStateOf(0.0F) }
   timer.subscribeSubSecond { shift = timer.elapsedMillis() / 1000F }
 
@@ -93,10 +101,10 @@ fun RenderBackground(timer: Timer) {
       val barWidth =
         (sqrt(size.width * size.width + size.height * size.height.toDouble()) / (numBars * 2)).toFloat()
       for (i in 0..numBarsTimes2) {
-        val xOffset = ((i * 2 + shift) % numBarsTimes2) * barWidth - size.width*0.75F
+        val xOffset = ((i * 2 + shift) % numBarsTimes2) * barWidth - size.width * 0.75F
         drawRect(
           color = Grey90,
-          topLeft = Offset(x = xOffset, y = -size.width/2),
+          topLeft = Offset(x = xOffset, y = -size.width / 2),
           size = Size(barWidth, size.height + size.width)
         )
       }
@@ -104,6 +112,7 @@ fun RenderBackground(timer: Timer) {
   }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun RenderedTimer(timer: Timer) {
   Row(
@@ -115,10 +124,19 @@ fun RenderedTimer(timer: Timer) {
       fontWeight = FontWeight.Bold,
       fontSize = 100.sp,
       lineHeight = 0.sp,
-      letterSpacing = 4.sp
+      letterSpacing = 4.sp,
     )
     timer.subscribe { currentTime.value = timer.toString() }
-    Text(text = currentTime.value, modifier = Modifier.padding(5.dp), style = timerFont)
+    Box {
+      Text(
+        text = currentTime.value,
+        modifier = Modifier
+          .semantics { invisibleToUser() }
+          .padding(5.dp),
+        style = timerFont.copy(drawStyle = Stroke(width = 30F), color = Color.Black)
+      )
+      Text(text = currentTime.value, modifier = Modifier.padding(5.dp), style = timerFont)
+    }
   }
 }
 
@@ -149,34 +167,31 @@ fun RenderBreakContinueButton(
     letterSpacing = 2.sp
   )
 
-  Button(
-    onClick = {
-      timer.toggle()
-      text = if (text == "BREAK") "CONTINUE" else "BREAK"
-      updateColors()
-    },
-    border = BorderStroke(
-      width = 3.dp,
-      color = borderColor
-    ),
-    colors = ButtonColors(backgroundColor, textColor, backgroundColor, textColor),
-    shape = RoundedCornerShape(5.dp)
-  ) {
-    Text(
-      text, style = buttonFont, modifier = modifier.padding(0.dp, 15.dp)
-    )
-  }
-}
+  val borderThickness = 3.dp
 
-@Preview(
-  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
-)
-@Composable
-fun PreviewRenderBackground() {
-  val timer = Timer(900)
-  RacingRegistersCompanionTheme {
-    Surface {
-      RenderBackground(timer)
+  Box(
+    modifier = modifier
+      .clip(RoundedCornerShape(borderThickness*2))
+      .background(Color.Black),
+    contentAlignment = Alignment.Center
+  ) {
+    Button(
+      onClick = {
+        timer.toggle()
+        text = if (text == "BREAK") "CONTINUE" else "BREAK"
+        updateColors()
+      },
+      border = BorderStroke(
+        width = borderThickness,
+        color = borderColor
+      ),
+      colors = ButtonColors(backgroundColor, textColor, backgroundColor, textColor),
+      shape = RoundedCornerShape(borderThickness),
+      modifier = modifier.padding(borderThickness)
+    ) {
+      Text(
+        text, style = buttonFont, modifier = modifier.padding(0.dp, 15.dp)
+      )
     }
   }
 }
@@ -216,6 +231,19 @@ fun PreviewRenderedBreakButton() {
   RacingRegistersCompanionTheme {
     Surface {
       RenderBreakContinueButton(timer = timer, Modifier, "BREAK")
+    }
+  }
+}
+
+@Preview(
+  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
+)
+@Composable
+fun PreviewRenderBackground() {
+  val timer = Timer(900)
+  RacingRegistersCompanionTheme {
+    Surface {
+      RenderBackground(timer)
     }
   }
 }
