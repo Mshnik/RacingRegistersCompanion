@@ -88,7 +88,7 @@ class TimerTest {
   @Test
   fun tickCallsSubSecondSubscriber() = runBlocking {
     var observed = false
-    timer.subscribeSubSecond { observed = true}
+    timer.subscribe(Event.TICK) { observed = true }
     timer.start()
     delayAtLeastOneTick()
     assertThat(observed).isTrue()

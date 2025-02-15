@@ -24,6 +24,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,7 +36,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.semantics.invisibleToUser
@@ -44,9 +45,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.redpup.racingregisters.companion.timer.Event
 import com.redpup.racingregisters.companion.timer.Timer
 import com.redpup.racingregisters.companion.ui.theme.Green90
-import com.redpup.racingregisters.companion.ui.theme.Grey50
 import com.redpup.racingregisters.companion.ui.theme.Grey90
 import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionTheme
 import com.redpup.racingregisters.companion.ui.theme.White90
@@ -73,7 +74,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun RenderScreen(timer: Timer, modifier: Modifier = Modifier) {
+fun RenderScreen(timer: Timer, modifier: Modifier) {
   Column(
     modifier = Modifier
       .fillMaxSize()
@@ -93,8 +94,8 @@ fun RenderScreen(timer: Timer, modifier: Modifier = Modifier) {
 fun RenderBackground(timer: Timer) {
   val numBars = 10
   val numBarsTimes2 = numBars * 2
-  var shift by remember { mutableStateOf(0.0F) }
-  timer.subscribeSubSecond { shift = timer.elapsedMillis() / 1000F }
+  var shift by remember { mutableFloatStateOf(0.0F) }
+  timer.subscribe(Event.TICK) { shift = timer.elapsedMillis() / 1000F }
 
   Canvas(modifier = Modifier.fillMaxSize()) {
     rotate(degrees = -45F) {
@@ -126,7 +127,7 @@ fun RenderedTimer(timer: Timer) {
       lineHeight = 0.sp,
       letterSpacing = 4.sp,
     )
-    timer.subscribe { currentTime.value = timer.toString() }
+    timer.subscribe(Event.SECOND) { currentTime.value = timer.toString() }
     Box {
       Text(
         text = currentTime.value,
@@ -171,7 +172,7 @@ fun RenderBreakContinueButton(
 
   Box(
     modifier = modifier
-      .clip(RoundedCornerShape(borderThickness*2))
+      .clip(RoundedCornerShape(borderThickness * 2))
       .background(Color.Black),
     contentAlignment = Alignment.Center
   ) {
