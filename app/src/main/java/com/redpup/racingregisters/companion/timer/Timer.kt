@@ -20,6 +20,8 @@ class Timer(
   var ticks = 0; internal set
 
   var timer: JavaTimer? = null; private set
+  var numResumes = 0; private set
+
   private val tickTime = 1000L / ticksPerSecond
   private val subscribers = mutableListOf<() -> Unit>()
   private val subSecondSubscribers = mutableListOf<() -> Unit>()
@@ -68,6 +70,7 @@ class Timer(
   private fun activate() {
     if (timer == null && remainingSeconds() > 0) {
       timer = timer("Timer", true, tickTime, tickTime) { tick() }
+      numResumes++
     }
   }
 

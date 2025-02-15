@@ -25,12 +25,14 @@ class TimerTest {
     assertThat(timer.elapsedMillis()).isEqualTo(0L)
     assertThat(timer.elapsedSeconds()).isEqualTo(0)
     assertThat(timer.remainingSeconds()).isEqualTo(TIMER_DURATION_SECONDS)
+    assertThat(timer.numResumes).isEqualTo(0)
   }
 
   @Test
   fun startStartsTimer() {
     timer.start()
     assertThat(timer.timer).isNotNull()
+    assertThat(timer.numResumes).isEqualTo(1)
   }
 
   @Test
@@ -39,6 +41,7 @@ class TimerTest {
     timer.start()
     timer.start()
     assertThat(timer.timer).isNotNull()
+    assertThat(timer.numResumes).isEqualTo(1)
   }
 
   @Test
@@ -53,6 +56,16 @@ class TimerTest {
     timer.start()
     timer.pause()
     assertThat(timer.timer).isNull()
+    assertThat(timer.numResumes).isEqualTo(1)
+  }
+
+  @Test
+  fun startAndPauseIncrementsNumResumes() {
+    timer.start()
+    timer.pause()
+    timer.start()
+    timer.pause()
+    assertThat(timer.numResumes).isEqualTo(2)
   }
 
   @Test
