@@ -1,5 +1,6 @@
 [versions]
 agp = "8.8.0"
+appcompatV7 = "23.2.0"
 guava = "32.0.1-jre"
 kotlin = "2.0.0"
 coreKtx = "1.10.1"
@@ -14,6 +15,7 @@ truth = "0.40"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+appcompat-v7 = { module = "com.android.support:appcompat-v7", version.ref = "appcompatV7" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

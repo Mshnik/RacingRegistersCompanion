@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +15,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -38,6 +41,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -54,7 +59,6 @@ import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
 import com.redpup.racingregisters.companion.ui.theme.sixtyFour
 import kotlin.math.hypot
-import kotlin.math.sqrt
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,12 +69,22 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     setContent {
       RacingRegistersCompanionTheme {
-        Scaffold { innerPadding ->
+        Scaffold(topBar = { RenderTopBar(timer) }) { innerPadding ->
           RenderBackground(timer)
           RenderScreen(timer, Modifier.padding(innerPadding))
         }
       }
     }
+  }
+}
+
+@Composable
+fun RenderTopBar(timer: Timer) {
+  Row(modifier = Modifier
+    .fillMaxWidth()
+    .offset(0.dp, 20.dp)
+    .padding(20.dp)) {
+    Image(painter = painterResource(R.drawable.reset), contentDescription = "Reset icon")
   }
 }
 
@@ -136,6 +150,8 @@ fun RenderedTimer(timer: Timer) {
     verticalAlignment = Alignment.CenterVertically,
   ) {
     val currentTime = remember { mutableStateOf(timer.toString()) }
+    timer.subscribe(Event.SECOND) { currentTime.value = timer.toString() }
+
     val timerFont = TextStyle(
       fontFamily = mPlus1Code,
       fontWeight = FontWeight.Bold,
@@ -143,7 +159,7 @@ fun RenderedTimer(timer: Timer) {
       lineHeight = 0.sp,
       letterSpacing = 4.sp,
     )
-    timer.subscribe(Event.SECOND) { currentTime.value = timer.toString() }
+
     Box {
       Text(text = currentTime.value,
            modifier = Modifier
@@ -214,14 +230,27 @@ fun RenderBreakContinueButton(
   uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
 )
 @Composable
-fun PreviewRenderedTimer() {
+fun PreviewRenderTopBar() {
   val timer = Timer(900)
   RacingRegistersCompanionTheme {
     Surface {
-      RenderedTimer(timer = timer)
+      RenderTopBar(timer)
     }
   }
 }
+
+// @Preview(
+//   uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
+// )
+// @Composable
+// fun PreviewRenderedTimer() {
+//   val timer = Timer(900)
+//   RacingRegistersCompanionTheme {
+//     Surface {
+//       RenderedTimer(timer = timer)
+//     }
+//   }
+// }
 
 @Preview(
   uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
