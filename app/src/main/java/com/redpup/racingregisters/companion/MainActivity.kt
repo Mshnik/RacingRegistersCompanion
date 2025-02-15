@@ -95,14 +95,26 @@ fun RenderBackground(timer: Timer) {
   val numBars = 10
   val numBarsTimes2 = numBars * 2
   var shift by remember { mutableFloatStateOf(0.0F) }
+  var shiftFactor by remember { mutableFloatStateOf(0.0F) }
+  var previousShift by remember { mutableFloatStateOf(0.0F) }
+  var previousShiftWithFactor by remember { mutableFloatStateOf(0.0F) }
+
   timer.subscribe(Event.TICK) { shift = timer.elapsedMillis() / 1000F }
+  timer.subscribe(Event.ACTIVATE) { shiftFactor = timer.numResumes.toFloat() }
+  timer.subscribe(Event.DEACTIVATE) {
+    previousShiftWithFactor += (shift - previousShift) * shiftFactor
+    previousShift = shift
+  }
 
   Canvas(modifier = Modifier.fillMaxSize()) {
     rotate(degrees = -45F) {
       val barWidth =
         (sqrt(size.width * size.width + size.height * size.height.toDouble()) / (numBars * 2)).toFloat()
+      val xShift = previousShiftWithFactor + (shift - previousShift) * shiftFactor
+      println("xOffset computation: $xShift = ($previousShiftWithFactor, $shift, $previousShift, $shiftFactor)")
       for (i in 0..numBarsTimes2) {
-        val xOffset = ((i * 2 + shift) % numBarsTimes2) * barWidth - size.width * 0.75F
+        val xOffset =
+          ((i * 2 + xShift) % numBarsTimes2) * barWidth - size.width * 0.75F
         drawRect(
           color = Grey90,
           topLeft = Offset(x = xOffset, y = -size.width / 2),
@@ -129,13 +141,11 @@ fun RenderedTimer(timer: Timer) {
     )
     timer.subscribe(Event.SECOND) { currentTime.value = timer.toString() }
     Box {
-      Text(
-        text = currentTime.value,
-        modifier = Modifier
-          .semantics { invisibleToUser() }
-          .padding(5.dp),
-        style = timerFont.copy(drawStyle = Stroke(width = 30F), color = Color.Black)
-      )
+      Text(text = currentTime.value,
+           modifier = Modifier
+             .semantics { invisibleToUser() }
+             .padding(5.dp),
+           style = timerFont.copy(drawStyle = Stroke(width = 30F), color = Color.Black))
       Text(text = currentTime.value, modifier = Modifier.padding(5.dp), style = timerFont)
     }
   }
@@ -183,8 +193,7 @@ fun RenderBreakContinueButton(
         updateColors()
       },
       border = BorderStroke(
-        width = borderThickness,
-        color = borderColor
+        width = borderThickness, color = borderColor
       ),
       colors = ButtonColors(backgroundColor, textColor, backgroundColor, textColor),
       shape = RoundedCornerShape(borderThickness),
