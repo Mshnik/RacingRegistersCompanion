@@ -257,8 +257,7 @@ fun RenderBreakContinueButton(
     Button(
       onClick = {
         state.timer.toggle()
-        buttonState =
-          if (buttonState == MainButtonState.BREAK) MainButtonState.CONTINUE else MainButtonState.BREAK
+        buttonState = buttonState.toggle()
         updateColors()
       },
       border = BorderStroke(

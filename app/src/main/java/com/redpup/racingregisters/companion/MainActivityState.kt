@@ -7,7 +7,16 @@ import com.redpup.racingregisters.companion.timer.Timer
 enum class MainButtonState {
   START,
   BREAK,
-  CONTINUE
+  CONTINUE;
+
+  /** Toggles this state to the next state. Break -> Continue, Anything else -> Break. */
+  fun toggle() :MainButtonState {
+    return if (this == BREAK) {
+      CONTINUE
+    } else {
+      BREAK
+    }
+  }
 }
 
 /** Events that can be fired on the main activity state. */
