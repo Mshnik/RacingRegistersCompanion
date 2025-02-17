@@ -111,9 +111,7 @@ fun RenderTopBar(state: MainActivityState) {
         Color.Black
       ),
       shape = CircleShape,
-      border = BorderStroke(
-        width = 3.dp, color = Grey90
-      ),
+      border = BorderStroke(width = 3.dp, color = Grey90),
       modifier = Modifier.size(size),
       contentPadding = PaddingValues(size * 0.2F)
     ) {
