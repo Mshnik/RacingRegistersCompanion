@@ -1,6 +1,5 @@
 package com.redpup.racingregisters.companion.timer
 
-import com.google.common.collect.ArrayListMultimap
 import com.redpup.racingregisters.companion.event.EventHandler
 import kotlin.concurrent.timer
 import java.util.Timer as JavaTimer
@@ -34,6 +33,7 @@ class Timer(
   var ticks = 0; internal set
   var timer: JavaTimer? = null; private set
   var numResumes = 0; private set
+  private val timerLock = Object()
 
   private val tickTime = 1000L / ticksPerSecond
   private val eventHandler = EventHandler<Event>()
@@ -65,10 +65,12 @@ class Timer(
 
   /** Either starts or pauses this timer, toggling between states. */
   fun toggle() {
-    if (timer == null) {
-      start()
-    } else {
-      pause()
+    synchronized(timerLock) {
+      if (timer == null) {
+        activate()
+      } else {
+        deactivate()
+      }
     }
   }
 
@@ -84,19 +86,23 @@ class Timer(
 
   /** Activates this timer. Does nothing if already active or if this timer is already elapsed. */
   private fun activate() {
-    if (timer == null && remainingSeconds() > 0) {
-      timer = timer("Timer", true, tickTime, tickTime) { tick() }
-      numResumes++
-      eventHandler.handleSubscribers(Event.ACTIVATE)
+    synchronized(timerLock) {
+      if (timer == null && remainingSeconds() > 0) {
+        timer = timer("Timer", true, tickTime, tickTime) { tick() }
+        numResumes++
+        eventHandler.handleSubscribers(Event.ACTIVATE)
+      }
     }
   }
 
   /** Deactivates this timer. Does nothing if currently active. */
   private fun deactivate() {
-    if (timer != null) {
-      timer?.cancel()
-      timer = null
-      eventHandler.handleSubscribers(Event.DEACTIVATE)
+    synchronized(timerLock) {
+      if (timer != null) {
+        timer?.cancel()
+        timer = null
+        eventHandler.handleSubscribers(Event.DEACTIVATE)
+      }
     }
   }
 

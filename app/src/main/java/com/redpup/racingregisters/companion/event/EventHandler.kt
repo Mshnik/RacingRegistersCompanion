@@ -1,14 +1,13 @@
 package com.redpup.racingregisters.companion.event
 
 import com.google.common.collect.ArrayListMultimap
-import com.redpup.racingregisters.companion.timer.Event
 
 /**
  * A generic handler for events. Allows subscription to a specific event, then invocation when
  * that event occurs.
  */
 class EventHandler<E> {
-  private val subscribers = ArrayListMultimap.create<E, () -> Unit>()
+  internal val subscribers = ArrayListMultimap.create<E, () -> Unit>()
   private val subscriberLock = Object()
 
   /**
