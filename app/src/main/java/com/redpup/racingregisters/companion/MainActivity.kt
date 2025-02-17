@@ -139,19 +139,18 @@ fun RenderBackground(state: MainActivityState) {
   var shift by remember { mutableFloatStateOf(0.0F) }
   var shiftFactor by remember { mutableFloatStateOf(0.0F) }
   var previousShift by remember { mutableFloatStateOf(0.0F) }
-  var previousShiftWithFactor by remember { mutableFloatStateOf(0.0F) }
+  var previousTotal by remember { mutableFloatStateOf(0.0F) }
 
   state.timer.subscribe(TimerEvent.TICK) { shift = state.timer.elapsedMillis() / 1000F }
   state.timer.subscribe(TimerEvent.ACTIVATE) { shiftFactor = state.timer.numResumes.toFloat() }
   state.timer.subscribe(TimerEvent.DEACTIVATE) {
-    previousShiftWithFactor += (shift - previousShift) * shiftFactor
+    previousTotal += (shift - previousShift) * shiftFactor
     previousShift = shift
   }
   state.subscribe(StateEvent.RESET) {
     shift = 0.0F
     shiftFactor = 0.0F
     previousShift = 0.0F
-    previousShiftWithFactor = 0.0F
   }
 
   Canvas(modifier = Modifier.fillMaxSize()) {
@@ -162,7 +161,7 @@ fun RenderBackground(state: MainActivityState) {
     val hypotenuse = hypot(h, w)
     rotate(degrees = -45F) {
       val barWidth = hypotenuse / numBarsTimes2
-      val xShift = previousShiftWithFactor + (shift - previousShift) * shiftFactor
+      val xShift = previousTotal + (shift - previousShift) * shiftFactor
       for (i in 0..numBarsTimes2) {
         val xOffset =
           ((i * 2 + xShift) % numBarsTimes2) * barWidth - threeQuartersW
