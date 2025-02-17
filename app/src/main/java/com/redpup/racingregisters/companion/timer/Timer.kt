@@ -1,5 +1,6 @@
 package com.redpup.racingregisters.companion.timer
 
+import androidx.annotation.GuardedBy
 import com.redpup.racingregisters.companion.event.EventHandler
 import kotlin.concurrent.timer
 import java.util.Timer as JavaTimer
@@ -31,9 +32,12 @@ class Timer(
   }
 
   var ticks = 0; internal set
-  var timer: JavaTimer? = null; private set
   var numResumes = 0; private set
+
   private val timerLock = Object()
+
+  @GuardedBy("timerLock")
+  var timer: JavaTimer? = null; private set
 
   private val tickTime = 1000L / ticksPerSecond
   private val eventHandler = EventHandler<Event>()
@@ -99,7 +103,7 @@ class Timer(
   private fun deactivate() {
     synchronized(timerLock) {
       if (timer != null) {
-        timer?.cancel()
+        timer!!.cancel()
         timer = null
         eventHandler.handleSubscribers(Event.DEACTIVATE)
       }

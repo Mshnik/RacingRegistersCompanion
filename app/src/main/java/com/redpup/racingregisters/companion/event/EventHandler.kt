@@ -1,5 +1,6 @@
 package com.redpup.racingregisters.companion.event
 
+import androidx.annotation.GuardedBy
 import com.google.common.collect.ArrayListMultimap
 
 /**
@@ -7,8 +8,10 @@ import com.google.common.collect.ArrayListMultimap
  * that event occurs.
  */
 class EventHandler<E> {
-  internal val subscribers = ArrayListMultimap.create<E, () -> Unit>()
   private val subscriberLock = Object()
+
+  @GuardedBy("subscriberLock")
+  internal val subscribers = ArrayListMultimap.create<E, () -> Unit>()
 
   /**
    * Adds a subscriber to this timer for the given event.
