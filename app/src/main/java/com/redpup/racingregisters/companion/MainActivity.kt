@@ -38,10 +38,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -53,7 +53,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.redpup.racingregisters.companion.Event
 import com.redpup.racingregisters.companion.Event as StateEvent
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.Timer
@@ -90,6 +89,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun RenderTopBar(state: MainActivityState) {
   val size = 50.dp
+  var enabled by remember { mutableStateOf(false) }
+
+  state.subscribe(StateEvent.RESET) { enabled = false }
+  state.timer.subscribe(TimerEvent.ACTIVATE) { enabled = true }
+
   Row(
     modifier = Modifier
       .fillMaxWidth()
@@ -99,6 +103,7 @@ fun RenderTopBar(state: MainActivityState) {
   ) {
     Button(
       onClick = { state.reset() },
+      enabled = enabled,
       colors = ButtonColors(
         Color.Black,
         Color.Black,
@@ -115,6 +120,7 @@ fun RenderTopBar(state: MainActivityState) {
       Image(
         painter = painterResource(R.drawable.reset),
         contentDescription = "Reset icon",
+        colorFilter = if (enabled) ColorFilter.tint(White90) else ColorFilter.tint(Grey50)
       )
     }
   }
@@ -228,7 +234,7 @@ fun RenderBreakContinueButton(
   }
   updateColors()
 
-  state.subscribe(Event.RESET) {
+  state.subscribe(StateEvent.RESET) {
     buttonState = initialState
     updateColors()
   }
