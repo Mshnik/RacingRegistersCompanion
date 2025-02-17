@@ -1,3 +1,4 @@
 <resources>
   <integer name="default_duration_seconds">900</integer>
+  <integer name="num_background_bars">20</integer>
 </resources>

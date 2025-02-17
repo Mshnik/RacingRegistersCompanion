@@ -70,11 +70,13 @@ class MainActivity : ComponentActivity() {
     val timerDuration = baseContext.resources.getInteger(R.integer.default_duration_seconds)
     val state = MainActivityState(Timer(timerDuration))
 
+    val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
+
     enableEdgeToEdge()
     setContent {
       RacingRegistersCompanionTheme {
         Scaffold(topBar = { RenderTopBar(state) }) { innerPadding ->
-          RenderBackground(state)
+          RenderBackground(state, numBackgroundBars)
           RenderScreen(state, Modifier.padding(innerPadding))
         }
       }
@@ -133,8 +135,7 @@ fun RenderScreen(state: MainActivityState, modifier: Modifier) {
 }
 
 @Composable
-fun RenderBackground(state: MainActivityState) {
-  val numBars = 10
+fun RenderBackground(state: MainActivityState, numBars: Int) {
   val numBarsTimes2 = numBars * 2
   var shift by remember { mutableFloatStateOf(0.0F) }
   var shiftFactor by remember { mutableFloatStateOf(0.0F) }
@@ -208,15 +209,15 @@ fun RenderedTimer(state: MainActivityState) {
 fun RenderBreakContinueButton(
   state: MainActivityState,
   modifier: Modifier = Modifier,
-  initialText: String = "CONTINUE",
+  initialState: MainButtonState = MainButtonState.START,
 ) {
-  var text by remember { mutableStateOf(initialText) }
+  var buttonState by remember { mutableStateOf(initialState) }
   var textColor by remember { mutableStateOf(Color.Black) }
   var backgroundColor by remember { mutableStateOf(Color.Black) }
   var borderColor by remember { mutableStateOf(Color.Black) }
 
   fun updateColors() {
-    val isBreak = text == "BREAK"
+    val isBreak = buttonState == MainButtonState.BREAK
     textColor = if (isBreak) Color.Black else Green90
     backgroundColor = if (isBreak) White90 else Color.Black
     borderColor = if (isBreak) White90 else Green90
@@ -224,7 +225,7 @@ fun RenderBreakContinueButton(
   updateColors()
 
   state.subscribe(Event.RESET) {
-    text = initialText
+    buttonState = initialState
     updateColors()
   }
 
@@ -247,7 +248,8 @@ fun RenderBreakContinueButton(
     Button(
       onClick = {
         state.timer.toggle()
-        text = if (text == "BREAK") "CONTINUE" else "BREAK"
+        buttonState =
+          if (buttonState == MainButtonState.BREAK) MainButtonState.CONTINUE else MainButtonState.BREAK
         updateColors()
       },
       border = BorderStroke(
@@ -258,7 +260,7 @@ fun RenderBreakContinueButton(
       modifier = modifier.padding(borderThickness)
     ) {
       Text(
-        text, style = buttonFont, modifier = modifier.padding(0.dp, 15.dp)
+        buttonState.name, style = buttonFont, modifier = modifier.padding(0.dp, 15.dp)
       )
     }
   }
@@ -294,11 +296,24 @@ fun PreviewRenderTopBar() {
   uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
 )
 @Composable
+fun PreviewRenderedStartButton() {
+  val state = MainActivityState(Timer(900))
+  RacingRegistersCompanionTheme {
+    Surface {
+      RenderBreakContinueButton(state = state, Modifier, MainButtonState.START)
+    }
+  }
+}
+
+@Preview(
+  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
+)
+@Composable
 fun PreviewRenderedContinueButton() {
   val state = MainActivityState(Timer(900))
   RacingRegistersCompanionTheme {
     Surface {
-      RenderBreakContinueButton(state = state, Modifier, "CONTINUE")
+      RenderBreakContinueButton(state = state, Modifier, MainButtonState.CONTINUE)
     }
   }
 }
@@ -311,7 +326,7 @@ fun PreviewRenderedBreakButton() {
   val state = MainActivityState(Timer(900))
   RacingRegistersCompanionTheme {
     Surface {
-      RenderBreakContinueButton(state = state, Modifier, "BREAK")
+      RenderBreakContinueButton(state = state, Modifier, MainButtonState.BREAK)
     }
   }
 }
@@ -324,7 +339,7 @@ fun PreviewRenderBackground() {
   val state = MainActivityState(Timer(900))
   RacingRegistersCompanionTheme {
     Surface {
-      RenderBackground(state)
+      RenderBackground(state, 20)
     }
   }
 }

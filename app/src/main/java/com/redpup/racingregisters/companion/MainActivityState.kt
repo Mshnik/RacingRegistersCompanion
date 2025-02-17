@@ -1,9 +1,16 @@
 package com.redpup.racingregisters.companion
 
-import android.content.Context
 import com.redpup.racingregisters.companion.event.EventHandler
 import com.redpup.racingregisters.companion.timer.Timer
 
+/** State of the main action button on the main activity. */
+enum class MainButtonState {
+  START,
+  BREAK,
+  CONTINUE
+}
+
+/** Events that can be fired on the main activity state. */
 enum class Event {
   RESET
 }
