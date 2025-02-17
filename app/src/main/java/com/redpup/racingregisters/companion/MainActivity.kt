@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -80,11 +84,34 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun RenderTopBar(timer: Timer) {
-  Row(modifier = Modifier
-    .fillMaxWidth()
-    .offset(0.dp, 20.dp)
-    .padding(20.dp)) {
-    Image(painter = painterResource(R.drawable.reset), contentDescription = "Reset icon")
+  val size = 50.dp
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .offset(0.dp, 40.dp)
+      .padding(20.dp),
+    horizontalArrangement = Arrangement.End
+  ) {
+    Button(
+      onClick = { timer.reset() },
+      colors = ButtonColors(
+        Color.Black,
+        Color.Black,
+        Color.Black,
+        Color.Black
+      ),
+      shape = CircleShape,
+      border = BorderStroke(
+        width = 3.dp, color = Grey90
+      ),
+      modifier = Modifier.size(size),
+      contentPadding = PaddingValues(size*0.2F)
+    ) {
+      Image(
+        painter = painterResource(R.drawable.reset),
+        contentDescription = "Reset icon",
+      )
+    }
   }
 }
 
