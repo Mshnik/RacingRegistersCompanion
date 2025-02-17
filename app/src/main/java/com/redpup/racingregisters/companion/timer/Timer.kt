@@ -1,6 +1,7 @@
 package com.redpup.racingregisters.companion.timer
 
 import com.google.common.collect.ArrayListMultimap
+import com.redpup.racingregisters.companion.event.EventHandler
 import kotlin.concurrent.timer
 import java.util.Timer as JavaTimer
 import kotlin.math.max
@@ -35,8 +36,7 @@ class Timer(
   var numResumes = 0; private set
 
   private val tickTime = 1000L / ticksPerSecond
-  private val subscribers = ArrayListMultimap.create<Event, () -> Unit>()
-  private val subscriberLock = Object()
+  private val eventHandler = EventHandler<Event>()
 
   /** The amount of milliseconds that have passed. */
   fun elapsedMillis(): Long {
@@ -77,7 +77,8 @@ class Timer(
     if (ticks != 0) {
       deactivate()
       ticks = 0
-      handleSubscribers(Event.RESET)
+      numResumes = 0
+      eventHandler.handleSubscribers(Event.RESET)
     }
   }
 
@@ -86,7 +87,7 @@ class Timer(
     if (timer == null && remainingSeconds() > 0) {
       timer = timer("Timer", true, tickTime, tickTime) { tick() }
       numResumes++
-      handleSubscribers(Event.ACTIVATE)
+      eventHandler.handleSubscribers(Event.ACTIVATE)
     }
   }
 
@@ -95,7 +96,7 @@ class Timer(
     if (timer != null) {
       timer?.cancel()
       timer = null
-      handleSubscribers(Event.DEACTIVATE)
+      eventHandler.handleSubscribers(Event.DEACTIVATE)
     }
   }
 
@@ -103,10 +104,10 @@ class Timer(
   @Synchronized
   private fun tick() {
     ticks++
-    handleSubscribers(Event.TICK)
+    eventHandler.handleSubscribers(Event.TICK)
 
     if (ticks % ticksPerSecond == 0) {
-      handleSubscribers(Event.SECOND)
+      eventHandler.handleSubscribers(Event.SECOND)
 
       if (remainingSeconds() == 0) {
         deactivate()
@@ -133,22 +134,11 @@ class Timer(
    * Adds a subscriber to this timer for the given event.
    */
   fun subscribe(event: Event, sub: () -> Unit) {
-    synchronized(subscriberLock) {
-      subscribers.put(event, sub)
-    }
+    eventHandler.subscribe(event, sub)
   }
 
   /** Clears any existing subscribers. */
   fun clearSubscribers() {
-    synchronized(subscriberLock) {
-      subscribers.clear()
-    }
-  }
-
-  /** Handles all subscribers registered for the given Event. */
-  private fun handleSubscribers(event: Event) {
-    synchronized(subscriberLock) {
-      subscribers.get(event).forEach { it.invoke() }
-    }
+    eventHandler.clearSubscribers()
   }
 }
