@@ -38,9 +38,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.res.painterResource
@@ -56,6 +58,7 @@ import com.redpup.racingregisters.companion.Event as StateEvent
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.Timer
 import com.redpup.racingregisters.companion.ui.theme.Green90
+import com.redpup.racingregisters.companion.ui.theme.Grey50
 import com.redpup.racingregisters.companion.ui.theme.Grey90
 import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionTheme
 import com.redpup.racingregisters.companion.ui.theme.White90
@@ -192,6 +195,7 @@ fun RenderedTimer(state: MainActivityState) {
       fontSize = 100.sp,
       lineHeight = 0.sp,
       letterSpacing = 4.sp,
+      shadow = Shadow(color = Color.Black, offset = Offset(10f, 10f), blurRadius = 10f)
     )
 
     Box {
@@ -234,7 +238,8 @@ fun RenderBreakContinueButton(
     fontWeight = FontWeight.Bold,
     fontSize = 23.sp,
     lineHeight = 0.sp,
-    letterSpacing = 2.sp
+    letterSpacing = 2.sp,
+    shadow = Shadow(color = Grey50, offset = Offset(6F, 6F), blurRadius = 0f)
   )
 
   val borderThickness = 3.dp
