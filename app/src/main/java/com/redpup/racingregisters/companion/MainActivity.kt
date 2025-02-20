@@ -94,10 +94,8 @@ class MainActivity : ComponentActivity() {
   private fun setupMusic(context: Context, state: MainActivityState) {
     val volume = 0.5f
     val drums = LoopMediaPlayer.create(context, R.raw.music_drums);
-    // val drums = MediaPlayer.create(baseContext, R.raw.music_drums)
-    // drums.isLooping = true
-    // drums.setVolume(volume, volume)
-    // drums.start()
+    drums.setVolume(volume)
+    drums.start()
   }
 }
 

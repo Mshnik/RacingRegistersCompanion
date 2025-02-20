@@ -13,6 +13,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
  * Overflow</a>.
  */
 public final class LoopMediaPlayer {
+
   private final Context context;
   private final int resourceId;
 
@@ -22,6 +23,9 @@ public final class LoopMediaPlayer {
   @GuardedBy("this")
   private @MonotonicNonNull MediaPlayer nextPlayer;
 
+  @GuardedBy("this")
+  private float volume;
+
   public static LoopMediaPlayer create(Context context, int resourceId) {
     return new LoopMediaPlayer(context, resourceId);
   }
@@ -30,9 +34,8 @@ public final class LoopMediaPlayer {
     this.context = context;
     this.resourceId = resourceId;
 
-    currentPlayer = createMediaPlayer();
-    currentPlayer.setOnPreparedListener(unused -> currentPlayer.start());
-
+    this.volume = 1.0f;
+    this.currentPlayer = createMediaPlayer();
     createNextMediaPlayer();
   }
 
@@ -40,7 +43,9 @@ public final class LoopMediaPlayer {
    * Creates a new media player with the configured parameters.
    */
   private MediaPlayer createMediaPlayer() {
-    return MediaPlayer.create(context, resourceId);
+    MediaPlayer mediaPlayer = MediaPlayer.create(context, resourceId);
+    mediaPlayer.setVolume(volume, volume);
+    return mediaPlayer;
   }
 
   /**
@@ -60,5 +65,28 @@ public final class LoopMediaPlayer {
     mediaPlayer.release();
     currentPlayer = nextPlayer;
     createNextMediaPlayer();
+  }
+
+  /**
+   * Starts this looping player.
+   */
+  public synchronized void start() {
+    currentPlayer.start();
+  }
+
+  /**
+   * Pauses this looping player.
+   */
+  public synchronized void pause() {
+    currentPlayer.pause();
+  }
+
+  /**
+   * Sets the volume of this looping player. This volume persists across loops.
+   */
+  public synchronized void setVolume(float volume) {
+    this.volume = volume;
+    currentPlayer.setVolume(volume, volume);
+    nextPlayer.setVolume(volume, volume);
   }
 }
