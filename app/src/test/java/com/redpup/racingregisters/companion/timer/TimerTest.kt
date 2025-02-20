@@ -22,6 +22,7 @@ class TimerTest {
   fun initializesTime() {
     assertThat(timer.initialSeconds).isEqualTo(TIMER_DURATION_SECONDS)
     assertThat(timer.ticks).isEqualTo(0)
+    assertThat(timer.isActive()).isFalse()
     assertThat(timer.elapsedMillis()).isEqualTo(0L)
     assertThat(timer.elapsedSeconds()).isEqualTo(0)
     assertThat(timer.remainingSeconds()).isEqualTo(TIMER_DURATION_SECONDS)
@@ -31,6 +32,7 @@ class TimerTest {
   @Test
   fun startStartsTimer() {
     timer.start()
+    assertThat(timer.isActive()).isTrue()
     assertThat(timer.timer).isNotNull()
     assertThat(timer.numResumes).isEqualTo(1)
   }
@@ -40,6 +42,7 @@ class TimerTest {
     timer.start()
     timer.start()
     timer.start()
+    assertThat(timer.isActive()).isTrue()
     assertThat(timer.timer).isNotNull()
     assertThat(timer.numResumes).isEqualTo(1)
   }
@@ -49,12 +52,14 @@ class TimerTest {
     timer.ticks = Integer.MAX_VALUE
     timer.start()
     assertThat(timer.timer).isNull()
+    assertThat(timer.isActive()).isFalse()
   }
 
   @Test
   fun startAndPauseStopsTimer() {
     timer.start()
     timer.pause()
+    assertThat(timer.isActive()).isFalse()
     assertThat(timer.timer).isNull()
     assertThat(timer.numResumes).isEqualTo(1)
   }
@@ -65,6 +70,7 @@ class TimerTest {
     timer.pause()
     timer.start()
     timer.pause()
+    assertThat(timer.isActive()).isFalse()
     assertThat(timer.numResumes).isEqualTo(2)
   }
 
@@ -74,6 +80,7 @@ class TimerTest {
     timer.pause()
     timer.pause()
     timer.pause()
+    assertThat(timer.isActive()).isFalse()
     assertThat(timer.timer).isNull()
   }
 
@@ -81,6 +88,7 @@ class TimerTest {
   fun tickIncrementsTicks() = runBlocking {
     timer.start()
     delayAtLeastOneTick()
+    assertThat(timer.isActive()).isTrue()
     assertThat(timer.ticks).isGreaterThan(0)
     assertThat(timer.elapsedMillis()).isGreaterThan(0)
   }
@@ -98,10 +106,12 @@ class TimerTest {
   fun resetTimer() = runBlocking {
     timer.start()
     delayAtLeastOneTick()
+    assertThat(timer.isActive()).isTrue()
     assertThat(timer.ticks).isGreaterThan(0)
 
     timer.reset()
     assertThat(timer.ticks).isEqualTo(0)
+    assertThat(timer.isActive()).isFalse()
     assertThat(timer.timer).isNull()
   }
 
