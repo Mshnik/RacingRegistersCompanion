@@ -95,6 +95,7 @@ class MainActivity : ComponentActivity() {
     val volume = 0.5f
     val drums = LoopMediaPlayer.create(context, R.raw.music_drums);
     drums.setVolume(volume)
+    drums.setAutoAdvanceSpeedIncrement(0.1f)
     drums.start()
   }
 }

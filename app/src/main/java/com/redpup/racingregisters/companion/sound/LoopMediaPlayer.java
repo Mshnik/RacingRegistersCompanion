@@ -2,6 +2,7 @@ package com.redpup.racingregisters.companion.sound;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.media.PlaybackParams;
 import androidx.annotation.GuardedBy;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
@@ -26,6 +27,12 @@ public final class LoopMediaPlayer {
   @GuardedBy("this")
   private float volume;
 
+  @GuardedBy("this")
+  private float speed;
+
+  @GuardedBy("this")
+  private float speedIncrement;
+
   public static LoopMediaPlayer create(Context context, int resourceId) {
     return new LoopMediaPlayer(context, resourceId);
   }
@@ -35,7 +42,11 @@ public final class LoopMediaPlayer {
     this.resourceId = resourceId;
 
     this.volume = 1.0f;
+    this.speed = 1.0f;
+    this.speedIncrement = 0.0f;
+
     this.currentPlayer = createMediaPlayer();
+    this.currentPlayer.setOnPreparedListener(this::setMediaPlayerParams);
     createNextMediaPlayer();
   }
 
@@ -43,9 +54,16 @@ public final class LoopMediaPlayer {
    * Creates a new media player with the configured parameters.
    */
   private MediaPlayer createMediaPlayer() {
-    MediaPlayer mediaPlayer = MediaPlayer.create(context, resourceId);
-    mediaPlayer.setVolume(volume, volume);
-    return mediaPlayer;
+    return MediaPlayer.create(context, resourceId);
+  }
+
+  /**
+   * Sets params on {@code mp}. This is done separately from {@link #createMediaPlayer()} because
+   * setting non-zero speed also calls start.
+   */
+  private void setMediaPlayerParams(MediaPlayer mp) {
+    mp.setVolume(volume, volume);
+    mp.setPlaybackParams(mp.getPlaybackParams().setSpeed(speed));
   }
 
   /**
@@ -63,7 +81,13 @@ public final class LoopMediaPlayer {
    */
   private synchronized void advanceMediaPlayer(MediaPlayer mediaPlayer) {
     mediaPlayer.release();
+
+    if (speedIncrement > 0) {
+      setPlaybackSpeed(speed + speedIncrement);
+    }
+
     currentPlayer = nextPlayer;
+    setMediaPlayerParams(currentPlayer);
     createNextMediaPlayer();
   }
 
@@ -88,5 +112,19 @@ public final class LoopMediaPlayer {
     this.volume = volume;
     currentPlayer.setVolume(volume, volume);
     nextPlayer.setVolume(volume, volume);
+  }
+
+  /**
+   * Sets the speed of this looping player.
+   */
+  public synchronized void setPlaybackSpeed(float speed) {
+    this.speed = speed;
+  }
+
+  /**
+   * Sets the speed increment to increase every play back.
+   */
+  public synchronized void setAutoAdvanceSpeedIncrement(float speedIncrement) {
+    this.speedIncrement = speedIncrement;
   }
 }
