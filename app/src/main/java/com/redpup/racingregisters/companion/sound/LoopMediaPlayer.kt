@@ -8,14 +8,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull
 /**
  * Media player that plays a single sound on loop, without gaps.
  *
- *
- * See [Stack
- * Overflow](https://stackoverflow.com/questions/26274182/not-able-to-achieve-gapless-audio-looping-so-far-on-android).
+ * See [StackOverflow](https://stackoverflow.com/questions/26274182/not-able-to-achieve-gapless-audio-looping-so-far-on-android).
  */
-class LoopMediaPlayer(
-  private val context: Context,
-  private val resourceId: Int,
-) {
+class LoopMediaPlayer(private val context: Context, private val resourceId: Int) {
   @GuardedBy("this")
   private var currentPlayer: @MonotonicNonNull MediaPlayer? = null
 
@@ -45,6 +40,7 @@ class LoopMediaPlayer(
    * Sets params on `mp`. This is done separately from [.createMediaPlayer] because
    * setting non-zero speed also calls start.
    */
+  @Synchronized
   private fun setMediaPlayerParams(mp: MediaPlayer) {
     mp.setVolume(volume, volume)
     mp.playbackParams = mp.playbackParams.setSpeed(speed)
@@ -76,7 +72,6 @@ class LoopMediaPlayer(
 
   /** Returns true iff this player is currently playing.  */
   @get:Synchronized val isPlaying: Boolean get() = currentPlayer!!.isPlaying
-
 
   /**
    * Starts this looping player.

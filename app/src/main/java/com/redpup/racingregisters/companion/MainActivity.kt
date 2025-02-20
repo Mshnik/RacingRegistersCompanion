@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.redpup.racingregisters.companion.Event as StateEvent
 import com.redpup.racingregisters.companion.sound.LoopMediaPlayer
+import com.redpup.racingregisters.companion.sound.LoopMusic
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.Timer
 import com.redpup.racingregisters.companion.ui.theme.Green90
@@ -92,18 +93,15 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun setupMusic(context: Context, state: MainActivityState) {
-    val volume = 0.5f
-    val drums = LoopMediaPlayer(context, R.raw.music_drums)
-    drums.setVolume(volume)
-    drums.setAutoAdvanceSpeedIncrement(0.1f)
+    val music = LoopMusic(context)
+    music.masterVolume = 0.5f
+    music.setAutoAdvanceSpeedIncrement(0.05f)
 
     state.timer.subscribe(TimerEvent.ACTIVATE) {
-      if (drums.isPlaying) {
-        drums.incrementSpeed()
-      } else {
-        drums.start()
-      }
+      music.enableNextTrack()
     }
+
+    music.start()
   }
 }
 
