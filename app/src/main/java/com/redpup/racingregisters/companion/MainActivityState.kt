@@ -1,7 +1,10 @@
 package com.redpup.racingregisters.companion
 
+import android.content.Context
+import android.media.MediaPlayer
 import com.redpup.racingregisters.companion.event.EventHandler
 import com.redpup.racingregisters.companion.timer.Timer
+import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 
 /** State of the main action button on the main activity. */
 enum class MainButtonState {

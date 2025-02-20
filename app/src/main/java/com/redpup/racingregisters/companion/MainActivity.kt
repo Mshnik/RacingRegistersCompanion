@@ -1,6 +1,7 @@
 package com.redpup.racingregisters.companion
 
 import android.content.res.Configuration
+import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -45,6 +46,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
@@ -248,6 +250,9 @@ fun RenderBreakContinueButton(
 
   val borderThickness = 3.dp
 
+  val soundEffectStart = MediaPlayer.create(LocalContext.current, R.raw.effect_start)
+  val soundEffectBreak = MediaPlayer.create(LocalContext.current, R.raw.effect_break)
+
   Box(
     modifier = modifier
       .clip(RoundedCornerShape(borderThickness * 2))
@@ -257,6 +262,11 @@ fun RenderBreakContinueButton(
     Button(
       onClick = {
         state.timer.toggle()
+        if (state.timer.isActive()) {
+          soundEffectStart.start();
+        } else {
+          soundEffectBreak.start();
+        }
         buttonState = buttonState.toggle()
         updateColors()
       },

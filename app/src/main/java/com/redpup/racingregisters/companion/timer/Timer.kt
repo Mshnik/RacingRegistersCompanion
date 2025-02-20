@@ -57,6 +57,13 @@ class Timer(
     return max(0, initialSeconds - elapsedSeconds())
   }
 
+  /** Returns whether this timer is currently active. */
+  fun isActive() : Boolean {
+    synchronized(timerLock) {
+      return timer != null;
+    }
+  }
+
   /** Starts this timer. Does nothing if already started. */
   fun start() {
     activate()
