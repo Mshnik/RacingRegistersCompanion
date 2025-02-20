@@ -93,12 +93,12 @@ class MainActivity : ComponentActivity() {
 
   private fun setupMusic(context: Context, state: MainActivityState) {
     val volume = 0.5f
-    val drums = LoopMediaPlayer.create(context, R.raw.music_drums);
+    val drums = LoopMediaPlayer(context, R.raw.music_drums)
     drums.setVolume(volume)
     drums.setAutoAdvanceSpeedIncrement(0.1f)
 
     state.timer.subscribe(TimerEvent.ACTIVATE) {
-      if (drums.isPlaying()) {
+      if (drums.isPlaying) {
         drums.incrementSpeed()
       } else {
         drums.start()
