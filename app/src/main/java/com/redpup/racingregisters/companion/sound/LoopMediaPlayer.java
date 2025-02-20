@@ -2,7 +2,6 @@ package com.redpup.racingregisters.companion.sound;
 
 import android.content.Context;
 import android.media.MediaPlayer;
-import android.media.PlaybackParams;
 import androidx.annotation.GuardedBy;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
@@ -14,7 +13,6 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
  * Overflow</a>.
  */
 public final class LoopMediaPlayer {
-
   private final Context context;
   private final int resourceId;
 
@@ -33,6 +31,7 @@ public final class LoopMediaPlayer {
   @GuardedBy("this")
   private float speedIncrement;
 
+  /** Creates a new LoopMediaPlayer on the given args. */
   public static LoopMediaPlayer create(Context context, int resourceId) {
     return new LoopMediaPlayer(context, resourceId);
   }
@@ -46,7 +45,6 @@ public final class LoopMediaPlayer {
     this.speedIncrement = 0.0f;
 
     this.currentPlayer = createMediaPlayer();
-    this.currentPlayer.setOnPreparedListener(this::setMediaPlayerParams);
     createNextMediaPlayer();
   }
 
@@ -81,20 +79,22 @@ public final class LoopMediaPlayer {
    */
   private synchronized void advanceMediaPlayer(MediaPlayer mediaPlayer) {
     mediaPlayer.release();
-
-    if (speedIncrement > 0) {
-      setPlaybackSpeed(speed + speedIncrement);
-    }
-
     currentPlayer = nextPlayer;
     setMediaPlayerParams(currentPlayer);
     createNextMediaPlayer();
   }
 
+  /** Returns true iff this player is currently playing. */
+  public synchronized boolean isPlaying() {
+    return currentPlayer.isPlaying();
+  }
+
+
   /**
    * Starts this looping player.
    */
   public synchronized void start() {
+    setMediaPlayerParams(currentPlayer);
     currentPlayer.start();
   }
 
@@ -119,6 +119,11 @@ public final class LoopMediaPlayer {
    */
   public synchronized void setPlaybackSpeed(float speed) {
     this.speed = speed;
+  }
+
+  /** Increases the speed of this looping player by the speed increment. */
+  public synchronized void incrementSpeed() {
+    setPlaybackSpeed(speed + speedIncrement);
   }
 
   /**

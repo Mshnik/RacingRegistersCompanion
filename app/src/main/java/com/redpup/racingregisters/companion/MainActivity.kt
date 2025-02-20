@@ -96,7 +96,14 @@ class MainActivity : ComponentActivity() {
     val drums = LoopMediaPlayer.create(context, R.raw.music_drums);
     drums.setVolume(volume)
     drums.setAutoAdvanceSpeedIncrement(0.1f)
-    drums.start()
+
+    state.timer.subscribe(TimerEvent.ACTIVATE) {
+      if (drums.isPlaying()) {
+        drums.incrementSpeed()
+      } else {
+        drums.start()
+      }
+    }
   }
 }
 
