@@ -1,5 +1,6 @@
 package com.redpup.racingregisters.companion
 
+import android.content.Context
 import android.content.res.Configuration
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -56,6 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.redpup.racingregisters.companion.Event as StateEvent
+import com.redpup.racingregisters.companion.sound.LoopMediaPlayer
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.Timer
 import com.redpup.racingregisters.companion.ui.theme.Green90
@@ -74,6 +76,8 @@ class MainActivity : ComponentActivity() {
     val timerDuration = baseContext.resources.getInteger(R.integer.default_duration_seconds)
     val state = MainActivityState(Timer(timerDuration))
 
+    setupMusic(baseContext, state)
+
     val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
 
     enableEdgeToEdge()
@@ -85,6 +89,15 @@ class MainActivity : ComponentActivity() {
         }
       }
     }
+  }
+
+  private fun setupMusic(context: Context, state: MainActivityState) {
+    val volume = 0.5f
+    val drums = LoopMediaPlayer.create(context, R.raw.music_drums);
+    // val drums = MediaPlayer.create(baseContext, R.raw.music_drums)
+    // drums.isLooping = true
+    // drums.setVolume(volume, volume)
+    // drums.start()
   }
 }
 
