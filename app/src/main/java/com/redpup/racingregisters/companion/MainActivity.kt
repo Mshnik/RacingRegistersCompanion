@@ -98,7 +98,11 @@ class MainActivity : ComponentActivity() {
     music.setAutoAdvanceSpeedIncrement(0.05f)
 
     state.timer.subscribe(TimerEvent.ACTIVATE) {
+      music.musicActive = true
       music.enableNextTrack()
+    }
+    state.timer.subscribe(TimerEvent.DEACTIVATE) {
+      music.musicActive = false
     }
 
     music.start()
