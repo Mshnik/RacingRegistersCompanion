@@ -1,3 +1,10 @@
 <resources>
   <string name="app_name">RacingRegistersCompanion</string>
+
+  <!--  Hack: https://stackoverflow.com/questions/3282390/add-floating-point-value-to-android-resources-values-->
+  <item name="music_volume_bass" format="float" type="dimen">0.6F</item>
+  <item name="music_volume_drums_1" format="float" type="dimen">0.8F</item>
+  <item name="music_volume_drums_2" format="float" type="dimen">0.8F</item>
+  <item name="music_volume_lead" format="float" type="dimen">1.0F</item>
+  <item name="music_volume_pad" format="float" type="dimen">0.8F</item>
 </resources>
