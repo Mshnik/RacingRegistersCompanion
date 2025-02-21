@@ -66,6 +66,7 @@ import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionThe
 import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
 import com.redpup.racingregisters.companion.ui.theme.sixtyFour
+import java.lang.reflect.Method
 import kotlin.math.hypot
 
 class MainActivity : ComponentActivity() {
@@ -100,11 +101,11 @@ class MainActivity : ComponentActivity() {
     music.masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     music.setAutoAdvanceSpeedIncrement(0.05f)
 
-    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE) {
+    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
       music.musicActive = true
       music.enableNextTrack()
     }
-    state.eventHandler.subscribe(StateEvent.BREAK) {
+    state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
       music.musicActive = false
     }
 
@@ -115,10 +116,10 @@ class MainActivity : ComponentActivity() {
     val soundEffectStart = MediaPlayer.create(context, R.raw.effect_start)
     val soundEffectBreak = MediaPlayer.create(context, R.raw.effect_break)
 
-    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE) {
+    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupSound") {
       soundEffectStart.start()
     }
-    state.eventHandler.subscribe(StateEvent.BREAK) {
+    state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupSound") {
       soundEffectBreak.start()
     }
   }
@@ -129,8 +130,8 @@ fun RenderTopBar(state: MainActivityState) {
   val size = 50.dp
   var enabled by remember { mutableStateOf(false) }
 
-  state.eventHandler.subscribe(StateEvent.RESET) { enabled = false }
-  state.eventHandler.subscribe(StateEvent.START) { enabled = true }
+  state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderTopBar") { enabled = false }
+  state.eventHandler.subscribe(StateEvent.START, tag = "RenderTopBar") { enabled = true }
 
   Row(
     modifier = Modifier
@@ -171,7 +172,7 @@ fun RenderScreen(state: MainActivityState, modifier: Modifier) {
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    RenderedTimer(
+    RenderTimer(
       state = state
     )
     Spacer(Modifier.height(40.dp))
@@ -187,17 +188,17 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
   var previousShift by remember { mutableFloatStateOf(0.0F) }
   var previousTotal by remember { mutableFloatStateOf(0.0F) }
 
-  state.timer.eventHandler.subscribe(TimerEvent.TICK) {
+  state.timer.eventHandler.subscribe(TimerEvent.TICK, tag = "RenderBackground") {
     shift = state.timer.elapsedMilliIncrements() / 1000F
   }
-  state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE) {
+  state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "RenderBackground") {
     shiftFactor = state.timer.numResumes.toFloat()
   }
-  state.eventHandler.subscribe(StateEvent.BREAK) {
+  state.eventHandler.subscribe(StateEvent.BREAK, tag = "RenderBackground") {
     previousTotal += (shift - previousShift) * shiftFactor
     previousShift = shift
   }
-  state.eventHandler.subscribe(StateEvent.RESET) {
+  state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderBackground") {
     shift = 0.0F
     shiftFactor = 0.0F
     previousShift = 0.0F
@@ -227,30 +228,34 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun RenderedTimer(state: MainActivityState) {
+fun RenderTimer(state: MainActivityState) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
   ) {
     var renderedTime by remember { mutableStateOf(state.timer.toString()) }
     var timeColor by remember { mutableStateOf(Grey50) }
 
-    state.timer.eventHandler.subscribe(TimerEvent.SECOND) { renderedTime = state.timer.toString() }
-    state.transitionTimer.eventHandler.subscribe(TimerEvent.SECOND) {
+    state.timer.eventHandler.subscribe(TimerEvent.SECOND, tag = "RenderTimer") {
+      renderedTime = state.timer.toString()
+    }
+    state.transitionTimer.eventHandler.subscribe(TimerEvent.SECOND, tag = "RenderTimer") {
       renderedTime = state.transitionTimer.toString()
     }
-    state.eventHandler.subscribe(StateEvent.RESET) { renderedTime = state.timer.toString() }
+    state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderTimer") {
+      renderedTime = state.timer.toString()
+    }
     state.eventHandler.subscribe(
       StateEvent.TRANSITION_TO_START,
-      StateEvent.TRANSITION_TO_CONTINUE
+      StateEvent.TRANSITION_TO_CONTINUE, tag = "RenderTimer"
     ) {
       timeColor = Green90
       renderedTime = state.transitionTimer.toString()
     }
-    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE) {
+    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "RenderTimer") {
       timeColor = White90
       renderedTime = state.timer.toString()
     }
-    state.eventHandler.subscribe(StateEvent.BREAK) {
+    state.eventHandler.subscribe(StateEvent.BREAK, tag = "RenderTimer") {
       timeColor = Grey50
     }
 
@@ -301,15 +306,24 @@ fun RenderBreakContinueButton(
   }
   updateColors()
 
-  state.eventHandler.subscribe(StateEvent.TRANSITION_TO_START, StateEvent.TRANSITION_TO_CONTINUE) {
+  state.eventHandler.subscribe(
+    StateEvent.TRANSITION_TO_START,
+    StateEvent.TRANSITION_TO_CONTINUE,
+    tag = "RenderBreakContinueButton"
+  ) {
     buttonEnabled = false
   }
-  state.eventHandler.subscribe(StateEvent.START, StateEvent.BREAK, StateEvent.CONTINUE) {
+  state.eventHandler.subscribe(
+    StateEvent.START,
+    StateEvent.BREAK,
+    StateEvent.CONTINUE,
+    tag = "RenderBreakContinueButton"
+  ) {
     buttonState = buttonState.toggle()
     updateColors()
     buttonEnabled = true
   }
-  state.eventHandler.subscribe(StateEvent.RESET) {
+  state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderBreakContinueButton") {
     buttonState = initialState
     updateColors()
     buttonEnabled = true
@@ -370,7 +384,7 @@ fun PreviewRenderedTimer() {
   val state = MainActivityState(Timer(900), Timer(3))
   RacingRegistersCompanionTheme {
     Surface {
-      RenderedTimer(state = state)
+      RenderTimer(state = state)
     }
   }
 }
