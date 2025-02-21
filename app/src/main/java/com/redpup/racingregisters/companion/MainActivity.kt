@@ -76,7 +76,10 @@ class MainActivity : ComponentActivity() {
 
     val timerDuration = baseContext.resources.getInteger(R.integer.timer_duration_seconds)
     val transitionDuration = baseContext.resources.getInteger(R.integer.transition_duration_seconds)
-    val state = MainActivityState(Timer(timerDuration), Timer(transitionDuration, completeAtSeconds = 1, completionMessage = "GO!"))
+    val state = MainActivityState(
+      Timer(timerDuration),
+      Timer(transitionDuration, completeAtSeconds = 1, completionMessage = "GO!")
+    )
 
     setupMusic(baseContext, state)
     setupSound(baseContext, state)
@@ -290,6 +293,7 @@ fun RenderBreakContinueButton(
   var textColor by remember { mutableStateOf(Color.Black) }
   var backgroundColor by remember { mutableStateOf(Color.Black) }
   var borderColor by remember { mutableStateOf(Color.Black) }
+  var buttonEnabled by remember { mutableStateOf(true) }
 
   fun updateColors() {
     val isBreak = buttonState == MainButtonState.BREAK
@@ -299,13 +303,18 @@ fun RenderBreakContinueButton(
   }
   updateColors()
 
+  state.eventHandler.subscribe(StateEvent.TRANSITION_TO_START, StateEvent.TRANSITION_TO_CONTINUE) {
+    buttonEnabled = false
+  }
   state.eventHandler.subscribe(StateEvent.START, StateEvent.BREAK, StateEvent.CONTINUE) {
     buttonState = buttonState.toggle()
     updateColors()
+    buttonEnabled = true
   }
   state.eventHandler.subscribe(StateEvent.RESET) {
     buttonState = initialState
     updateColors()
+    buttonEnabled = true
   }
 
   val buttonFont = TextStyle(
@@ -327,6 +336,7 @@ fun RenderBreakContinueButton(
   ) {
     Button(
       onClick = { state.action(buttonState) },
+      enabled = buttonEnabled,
       border = BorderStroke(
         width = borderThickness, color = borderColor
       ),
