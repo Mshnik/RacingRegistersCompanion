@@ -12,7 +12,10 @@ import kotlin.math.max
  */
 enum class Event {
   TICK,
-  SECOND
+  SECOND,
+  ACTIVATE,
+  DEACTIVATE,
+  FINISH
 }
 
 /**
@@ -98,6 +101,7 @@ class Timer(
       if (timer == null && remainingSeconds() > 0) {
         timer = timer("Timer", true, tickTime, tickTime) { tick() }
         numResumes++
+        eventHandler.handleSubscribers(Event.ACTIVATE)
       }
     }
   }
@@ -108,6 +112,7 @@ class Timer(
       if (timer != null) {
         timer!!.cancel()
         timer = null
+        eventHandler.handleSubscribers(Event.DEACTIVATE)
       }
     }
   }
@@ -123,6 +128,7 @@ class Timer(
 
       if (remainingSeconds() == 0) {
         deactivate()
+        eventHandler.handleSubscribers(Event.FINISH)
       }
     }
   }

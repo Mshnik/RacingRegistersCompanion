@@ -1,7 +1,7 @@
 package com.redpup.racingregisters.companion.event
 
 import androidx.annotation.GuardedBy
-import com.google.common.collect.ArrayListMultimap
+import com.google.common.collect.HashMultimap
 
 /**
  * A generic handler for events. Allows subscription to a specific event, then invocation when
@@ -11,7 +11,7 @@ class EventHandler<E> {
   private val subscriberLock = Object()
 
   @GuardedBy("subscriberLock")
-  internal val subscribers = ArrayListMultimap.create<E, () -> Unit>()
+  internal val subscribers = HashMultimap.create<E, () -> Unit>()
 
   /**
    * Adds a subscriber to this timer for the given event.

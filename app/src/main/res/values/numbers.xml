@@ -1,5 +1,5 @@
 <resources>
   <integer name="timer_duration_seconds">900</integer>
-  <integer name="reset_duration_seconds">3</integer>
+  <integer name="transition_duration_seconds">3</integer>
   <integer name="num_background_bars">20</integer>
 </resources>

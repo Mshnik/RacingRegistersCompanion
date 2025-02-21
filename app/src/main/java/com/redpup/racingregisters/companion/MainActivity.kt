@@ -75,8 +75,8 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
 
     val timerDuration = baseContext.resources.getInteger(R.integer.timer_duration_seconds)
-    val resetDuration = baseContext.resources.getInteger(R.integer.reset_duration_seconds)
-    val state = MainActivityState(Timer(timerDuration), Timer(resetDuration))
+    val transitionDuration = baseContext.resources.getInteger(R.integer.transition_duration_seconds)
+    val state = MainActivityState(Timer(timerDuration), Timer(transitionDuration))
 
     setupMusic(baseContext, state)
     setupSound(baseContext, state)
@@ -231,8 +231,27 @@ fun RenderedTimer(state: MainActivityState) {
     verticalAlignment = Alignment.CenterVertically,
   ) {
     var renderedTime by remember { mutableStateOf(state.timer.toString()) }
+    var timeColor by remember { mutableStateOf(Grey50) }
+
     state.timer.eventHandler.subscribe(TimerEvent.SECOND) { renderedTime = state.timer.toString() }
+    state.transitionTimer.eventHandler.subscribe(TimerEvent.SECOND) {
+      renderedTime = state.transitionTimer.toString()
+    }
     state.eventHandler.subscribe(StateEvent.RESET) { renderedTime = state.timer.toString() }
+    state.eventHandler.subscribe(
+      StateEvent.TRANSITION_TO_START,
+      StateEvent.TRANSITION_TO_CONTINUE
+    ) {
+      timeColor = Green90
+      renderedTime = state.transitionTimer.toString()
+    }
+    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE) {
+      timeColor = White90
+      renderedTime = state.timer.toString()
+    }
+    state.eventHandler.subscribe(StateEvent.BREAK) {
+      timeColor = Grey50
+    }
 
     val timerFont = TextStyle(
       fontFamily = mPlus1Code,
@@ -244,12 +263,19 @@ fun RenderedTimer(state: MainActivityState) {
     )
 
     Box {
-      Text(text = renderedTime,
-           modifier = Modifier
-             .semantics { invisibleToUser() }
-             .padding(5.dp),
-           style = timerFont.copy(drawStyle = Stroke(width = 30F), color = Color.Black))
-      Text(text = renderedTime, modifier = Modifier.padding(5.dp), style = timerFont)
+      Text(
+        text = renderedTime,
+        modifier = Modifier
+          .semantics { invisibleToUser() }
+          .padding(5.dp),
+        style = timerFont.copy(drawStyle = Stroke(width = 30F), color = Color.Black)
+      )
+      Text(
+        text = renderedTime,
+        modifier = Modifier.padding(5.dp),
+        style = timerFont,
+        color = timeColor
+      )
     }
   }
 }
@@ -273,6 +299,10 @@ fun RenderBreakContinueButton(
   }
   updateColors()
 
+  state.eventHandler.subscribe(StateEvent.START, StateEvent.BREAK, StateEvent.CONTINUE) {
+    buttonState = buttonState.toggle()
+    updateColors()
+  }
   state.eventHandler.subscribe(StateEvent.RESET) {
     buttonState = initialState
     updateColors()
@@ -296,11 +326,7 @@ fun RenderBreakContinueButton(
     contentAlignment = Alignment.Center
   ) {
     Button(
-      onClick = {
-        state.action(buttonState)
-        buttonState = buttonState.toggle()
-        updateColors()
-      },
+      onClick = { state.action(buttonState) },
       border = BorderStroke(
         width = borderThickness, color = borderColor
       ),
@@ -328,18 +354,18 @@ fun PreviewRenderTopBar() {
   }
 }
 
-// @Preview(
-//   uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
-// )
-// @Composable
-// fun PreviewRenderedTimer() {
-//   val timer = Timer(900)
-//   RacingRegistersCompanionTheme {
-//     Surface {
-//       RenderedTimer(timer = timer)
-//     }
-//   }
-// }
+@Preview(
+  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
+)
+@Composable
+fun PreviewRenderedTimer() {
+  val state = MainActivityState(Timer(900), Timer(3))
+  RacingRegistersCompanionTheme {
+    Surface {
+      RenderedTimer(state = state)
+    }
+  }
+}
 
 @Preview(
   uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
