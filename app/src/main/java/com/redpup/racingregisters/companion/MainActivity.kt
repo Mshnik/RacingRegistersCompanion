@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
 
     val timerDuration = baseContext.resources.getInteger(R.integer.timer_duration_seconds)
     val transitionDuration = baseContext.resources.getInteger(R.integer.transition_duration_seconds)
-    val state = MainActivityState(Timer(timerDuration), Timer(transitionDuration))
+    val state = MainActivityState(Timer(timerDuration), Timer(transitionDuration, completeAtSeconds = 1, completionMessage = "GO!"))
 
     setupMusic(baseContext, state)
     setupSound(baseContext, state)

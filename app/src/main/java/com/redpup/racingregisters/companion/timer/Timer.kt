@@ -24,12 +24,14 @@ enum class Event {
 class Timer(
   internal val initialSeconds: Int,
   internal val ticksPerSecond: Int = 100,
+  internal val completeAtSeconds: Int = 0,
   internal val completionMessage : String = "Done",
 ) {
   init {
     require(ticksPerSecond > 0 && 1000 % ticksPerSecond == 0) {
       "ticksPerSecond must be positive and evenly divide 1000."
     }
+    require (completeAtSeconds >= 0)
   }
 
   var ticks = 0; internal set
@@ -134,8 +136,8 @@ class Timer(
   }
 
   override fun toString(): String {
-    val remaining = remainingSeconds()
-    if (remaining == 0) {
+    val remaining = remainingSeconds() - completeAtSeconds
+    if (remaining <= 0) {
       return completionMessage
     }
 
