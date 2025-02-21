@@ -20,12 +20,12 @@ class TimerTest {
 
   @Test
   fun initializesTime() {
-    assertThat(timer.initialSeconds).isEqualTo(TIMER_DURATION_SECONDS)
+    assertThat(timer.initialIncrements).isEqualTo(TIMER_DURATION_SECONDS)
     assertThat(timer.ticks).isEqualTo(0)
     assertThat(timer.isActive()).isFalse()
     assertThat(timer.elapsedMillis()).isEqualTo(0L)
-    assertThat(timer.elapsedSeconds()).isEqualTo(0)
-    assertThat(timer.remainingSeconds()).isEqualTo(TIMER_DURATION_SECONDS)
+    assertThat(timer.elapsedIncrements()).isEqualTo(0)
+    assertThat(timer.remainingIncrements()).isEqualTo(TIMER_DURATION_SECONDS)
     assertThat(timer.numResumes).isEqualTo(0)
   }
 
@@ -94,9 +94,9 @@ class TimerTest {
   }
 
   @Test
-  fun tickCallsSubSecondSubscriber() = runBlocking {
+  fun tickCallsSubIncrementSubscriber() = runBlocking {
     var observed = false
-    timer.subscribe(Event.TICK) { observed = true }
+    timer.eventHandler.subscribe(Event.TICK) { observed = true }
     timer.start()
     delayAtLeastOneTick()
     assertThat(observed).isTrue()

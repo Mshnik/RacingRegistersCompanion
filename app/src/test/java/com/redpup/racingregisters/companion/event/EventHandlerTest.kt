@@ -11,7 +11,7 @@ class EventHandlerTest {
   fun subscribe() {
     val handler : () -> Unit = {}
 
-    eventHandler.subscribe(1, handler)
+    eventHandler.subscribe(1, sub = handler)
 
     assertThat(eventHandler.subscribers).containsExactly(1, handler)
   }
@@ -22,7 +22,7 @@ class EventHandlerTest {
     var output = 0
     val handler : () -> Unit = { output = input }
 
-    eventHandler.subscribe(2, handler)
+    eventHandler.subscribe(2, sub = handler)
     eventHandler.handleSubscribers(1)
 
     assertThat(output).isEqualTo(0)
@@ -34,7 +34,7 @@ class EventHandlerTest {
     var output = 0
     val handler : () -> Unit = { output = input }
 
-    eventHandler.subscribe(1, handler)
+    eventHandler.subscribe(1, sub = handler)
     eventHandler.handleSubscribers(1)
 
     assertThat(output).isEqualTo(input)
@@ -44,7 +44,7 @@ class EventHandlerTest {
   fun clearSubscribers() {
     val handler : () -> Unit = {}
 
-    eventHandler.subscribe(1, handler)
+    eventHandler.subscribe(1, sub = handler)
     eventHandler.clearSubscribers()
 
     assertThat(eventHandler.subscribers).isEmpty()

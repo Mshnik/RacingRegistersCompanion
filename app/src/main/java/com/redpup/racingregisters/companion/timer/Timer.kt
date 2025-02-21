@@ -19,19 +19,23 @@ enum class Event {
 }
 
 /**
- * Timer class that counts down from a specified number of seconds.
+ * Timer class that counts down from a specified number of increments.
+ *
+ * Each increment is made up of some number of ticks, which is the smallest increment of time.
+ * Events are fired both on tick and on increment.
  */
 class Timer(
-  internal val initialSeconds: Int,
-  internal val ticksPerSecond: Int = 100,
-  internal val completeAtSeconds: Int = 0,
-  internal val completionMessage : String = "Done",
+  internal val initialIncrements: Int,
+  internal val millisPerIncrement: Long = 1000L,
+  internal val ticksPerIncrement: Int = 100,
+  internal val completeAtIncrements: Int = 0,
+  internal val completionMessage : String = "DONE",
 ) {
   init {
-    require(ticksPerSecond > 0 && 1000 % ticksPerSecond == 0) {
-      "ticksPerSecond must be positive and evenly divide 1000."
+    require(ticksPerIncrement > 0 && millisPerIncrement % ticksPerIncrement == 0L) {
+      "ticksPerIncrement must be positive and evenly divide $millisPerIncrement."
     }
-    require (completeAtSeconds >= 0)
+    require (completeAtIncrements >= 0)
   }
 
   var ticks = 0; internal set
@@ -42,22 +46,22 @@ class Timer(
   @GuardedBy("timerLock")
   var timer: JavaTimer? = null; private set
 
-  private val tickTime = 1000L / ticksPerSecond
+  private val tickTime = millisPerIncrement / ticksPerIncrement
   val eventHandler = EventHandler<Event>()
 
-  /** The amount of milliseconds that have passed. */
+  /** The amount of milli-Increments that have passed. */
   fun elapsedMillis(): Long {
-    return ticks * 1000L / ticksPerSecond
+    return ticks * millisPerIncrement / ticksPerIncrement
   }
 
-  /** The whole number of elapsed seconds. */
-  fun elapsedSeconds(): Int {
-    return ticks / ticksPerSecond
+  /** The whole number of elapsed increments. */
+  fun elapsedIncrements(): Int {
+    return ticks / ticksPerIncrement
   }
 
-  /** The whole number of remaining seconds. */
-  fun remainingSeconds(): Int {
-    return max(0, initialSeconds - elapsedSeconds())
+  /** The whole number of remaining increments. */
+  fun remainingIncrements(): Int {
+    return max(0, initialIncrements - elapsedIncrements())
   }
 
   /** Returns whether this timer is currently active. */
@@ -100,7 +104,7 @@ class Timer(
   /** Activates this timer. Does nothing if already active or if this timer is already elapsed. */
   private fun activate() {
     synchronized(timerLock) {
-      if (timer == null && remainingSeconds() > 0) {
+      if (timer == null && remainingIncrements() > 0) {
         timer = timer("Timer", true, tickTime, tickTime) { tick() }
         numResumes++
         eventHandler.handleSubscribers(Event.ACTIVATE)
@@ -119,16 +123,16 @@ class Timer(
     }
   }
 
-  /** Timer tick that is invoked once a second. Invokes subscriber, if any. */
+  /** Timer tick that is invoked once a increment. Invokes subscriber, if any. */
   @Synchronized
   private fun tick() {
     ticks++
     eventHandler.handleSubscribers(Event.TICK)
 
-    if (ticks % ticksPerSecond == 0) {
+    if (ticks % ticksPerIncrement == 0) {
       eventHandler.handleSubscribers(Event.SECOND)
 
-      if (remainingSeconds() == 0) {
+      if (remainingIncrements() == 0) {
         deactivate()
         eventHandler.handleSubscribers(Event.FINISH)
       }
@@ -136,19 +140,19 @@ class Timer(
   }
 
   override fun toString(): String {
-    val remaining = remainingSeconds() - completeAtSeconds
+    val remaining = remainingIncrements() - completeAtIncrements
     if (remaining <= 0) {
       return completionMessage
     }
 
     val minutes = remaining / 60
-    val seconds = remaining % 60
+    val increments = remaining % 60
     if (minutes == 0) {
-      return "$seconds"
-    } else if (seconds < 10) {
-      return "${minutes}:0$seconds"
+      return "$increments"
+    } else if (increments < 10) {
+      return "${minutes}:0$increments"
     } else {
-      return "${minutes}:$seconds"
+      return "${minutes}:$increments"
     }
   }
 }
