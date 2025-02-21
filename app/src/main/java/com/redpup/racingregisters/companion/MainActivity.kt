@@ -100,15 +100,32 @@ class MainActivity : ComponentActivity() {
     state.eventHandler.clearSubscribers("setupMusic")
 
     val music = LoopMusic(context)
-    music.masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
+    val backgroundMusic = LoopMusic(context)
+    val transitionInMusic = MediaPlayer.create(context, R.raw.effect_continue)
+
+    val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
+    music.masterVolume = masterVolume
+    backgroundMusic.masterVolume = masterVolume
+    transitionInMusic.setVolume(masterVolume, masterVolume)
+
     music.setAutoAdvanceSpeedIncrement(0.05f)
 
+    state.transitionTimer.eventHandler.subscribe(TimerEvent.ACTIVATE, tag="setupMusic") {
+      music.pause()
+      transitionInMusic.start()
+    }
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
-      music.musicActive = true
+      backgroundMusic.pause()
+      transitionInMusic.stop()
+      music.start()
       music.enableNextTrack()
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
-      music.musicActive = false
+      music.pause()
+      backgroundMusic.start()
+      if (backgroundMusic.numEnabledTracks() == 0) {
+        backgroundMusic.enableNextTrack()
+      }
     }
 
     music.start()

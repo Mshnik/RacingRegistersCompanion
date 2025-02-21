@@ -42,11 +42,6 @@ class LoopMusic(context: Context) {
   @GuardedBy("trackLock")
   private var trackEnabled: MutableSet<Track> = mutableSetOf()
 
-  var musicActive = false; set(value) {
-    field = value
-    Track.entries.forEach { updateVolume(it) }
-  }
-
   var masterVolume: Float = 1.0F; set(value) {
     field = value
     Track.entries.forEach { updateVolume(it) }
@@ -84,8 +79,7 @@ class LoopMusic(context: Context) {
   /** Updates track volume based on set volume args. */
   private fun updateVolume(track: Track) {
     synchronized(trackLock) {
-      // TODO: Extract Drums1 being the background music from here to something more generic.
-      if ((musicActive || track == Track.DRUMS_1) && trackEnabled.contains(track)) {
+      if (trackEnabled.contains(track)) {
         tracks[track]!!.setVolume(trackVolumes[track]!! * masterVolume)
       } else {
         tracks[track]!!.setVolume(0.0F)
@@ -97,6 +91,12 @@ class LoopMusic(context: Context) {
   fun setAutoAdvanceSpeedIncrement(speedIncrement: Float) {
     synchronized(trackLock) {
       Track.entries.forEach { tracks[it]!!.setAutoAdvanceSpeedIncrement(speedIncrement) }
+    }
+  }
+
+  fun numEnabledTracks() : Int {
+    synchronized(trackLock) {
+      return trackEnabled.size
     }
   }
 
