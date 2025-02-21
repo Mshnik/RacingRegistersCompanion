@@ -97,6 +97,8 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun setupMusic(context: Context, state: MainActivityState) {
+    state.eventHandler.clearSubscribers("setupMusic")
+
     val music = LoopMusic(context)
     music.masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     music.setAutoAdvanceSpeedIncrement(0.05f)
@@ -113,6 +115,8 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun setupSound(context: Context, state: MainActivityState) {
+    state.eventHandler.clearSubscribers("setupSound")
+
     val soundEffectStart = MediaPlayer.create(context, R.raw.effect_start)
     val soundEffectBreak = MediaPlayer.create(context, R.raw.effect_break)
 
@@ -130,6 +134,7 @@ fun RenderTopBar(state: MainActivityState) {
   val size = 50.dp
   var enabled by remember { mutableStateOf(false) }
 
+  state.eventHandler.clearSubscribers("RenderTopBar")
   state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderTopBar") { enabled = false }
   state.eventHandler.subscribe(StateEvent.START, tag = "RenderTopBar") { enabled = true }
 
@@ -188,6 +193,8 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
   var previousShift by remember { mutableFloatStateOf(0.0F) }
   var previousTotal by remember { mutableFloatStateOf(0.0F) }
 
+  state.timer.eventHandler.clearSubscribers("RenderBackground")
+  state.eventHandler.clearSubscribers("RenderBackground")
   state.timer.eventHandler.subscribe(TimerEvent.TICK, tag = "RenderBackground") {
     shift = state.timer.elapsedMilliIncrements() / 1000F
   }
@@ -235,6 +242,9 @@ fun RenderTimer(state: MainActivityState) {
     var renderedTime by remember { mutableStateOf(state.timer.toString()) }
     var timeColor by remember { mutableStateOf(Grey50) }
 
+    state.timer.eventHandler.clearSubscribers("RenderTimer")
+    state.transitionTimer.eventHandler.clearSubscribers("RenderTimer")
+    state.eventHandler.clearSubscribers("RenderTimer")
     state.timer.eventHandler.subscribe(TimerEvent.SECOND, tag = "RenderTimer") {
       renderedTime = state.timer.toString()
     }
@@ -306,6 +316,7 @@ fun RenderBreakContinueButton(
   }
   updateColors()
 
+  state.eventHandler.clearSubscribers("RenderBreakContinueButton")
   state.eventHandler.subscribe(
     StateEvent.TRANSITION_TO_START,
     StateEvent.TRANSITION_TO_CONTINUE,
