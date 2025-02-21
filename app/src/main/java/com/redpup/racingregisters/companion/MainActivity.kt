@@ -47,7 +47,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
@@ -57,7 +56,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.redpup.racingregisters.companion.Event as StateEvent
-import com.redpup.racingregisters.companion.sound.LoopMediaPlayer
 import com.redpup.racingregisters.companion.sound.LoopMusic
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.Timer
@@ -190,7 +188,7 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
   var previousTotal by remember { mutableFloatStateOf(0.0F) }
 
   state.timer.eventHandler.subscribe(TimerEvent.TICK) {
-    shift = state.timer.elapsedMillis() / 1000F
+    shift = state.timer.elapsedMilliIncrements() / 1000F
   }
   state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE) {
     shiftFactor = state.timer.numResumes.toFloat()

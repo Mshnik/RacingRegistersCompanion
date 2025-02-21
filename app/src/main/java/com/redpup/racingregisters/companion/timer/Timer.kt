@@ -50,7 +50,7 @@ class Timer(
   val eventHandler = EventHandler<Event>()
 
   /** The amount of milli-Increments that have passed. */
-  fun elapsedMillis(): Long {
+  fun elapsedMilliIncrements(): Long {
     return ticks * millisPerIncrement / ticksPerIncrement
   }
 

@@ -8,10 +8,12 @@ import org.junit.Test
 
 class TimerTest {
   companion object {
-    private const val TIMER_DURATION_SECONDS = 100
+    private const val DURATION_INCREMENTS = 100
+    private const val INCREMENT_MILLIS = 10L
+    private const val TICKS_PER_INCREMENT = 10
   }
 
-  private val timer = Timer(TIMER_DURATION_SECONDS)
+  private val timer = Timer(DURATION_INCREMENTS, INCREMENT_MILLIS, TICKS_PER_INCREMENT)
 
   @After
   fun tearDown() {
@@ -20,12 +22,12 @@ class TimerTest {
 
   @Test
   fun initializesTime() {
-    assertThat(timer.initialIncrements).isEqualTo(TIMER_DURATION_SECONDS)
+    assertThat(timer.initialIncrements).isEqualTo(DURATION_INCREMENTS)
     assertThat(timer.ticks).isEqualTo(0)
     assertThat(timer.isActive()).isFalse()
-    assertThat(timer.elapsedMillis()).isEqualTo(0L)
+    assertThat(timer.elapsedMilliIncrements()).isEqualTo(0L)
     assertThat(timer.elapsedIncrements()).isEqualTo(0)
-    assertThat(timer.remainingIncrements()).isEqualTo(TIMER_DURATION_SECONDS)
+    assertThat(timer.remainingIncrements()).isEqualTo(DURATION_INCREMENTS)
     assertThat(timer.numResumes).isEqualTo(0)
   }
 
@@ -90,7 +92,7 @@ class TimerTest {
     delayAtLeastOneTick()
     assertThat(timer.isActive()).isTrue()
     assertThat(timer.ticks).isGreaterThan(0)
-    assertThat(timer.elapsedMillis()).isGreaterThan(0)
+    assertThat(timer.elapsedMilliIncrements()).isGreaterThan(0)
   }
 
   @Test
@@ -118,13 +120,13 @@ class TimerTest {
   @Test
   fun toStringFormatsString() {
     assertThat(timer.toString()).isEqualTo("1:40")
-    timer.ticks = 3500
-    assertThat(timer.toString()).isEqualTo("1:05")
+    timer.ticks = 50
+    assertThat(timer.toString()).isEqualTo("1:35")
     timer.ticks = Integer.MAX_VALUE
     assertThat(timer.toString()).isEqualTo("DONE")
   }
 
   private fun delayAtLeastOneTick() = runBlocking {
-    delay(250)
+    delay(INCREMENT_MILLIS / TICKS_PER_INCREMENT * 2)
   }
 }
