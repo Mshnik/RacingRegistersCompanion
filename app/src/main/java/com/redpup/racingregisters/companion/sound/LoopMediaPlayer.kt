@@ -1,124 +1,113 @@
 package com.redpup.racingregisters.companion.sound
 
-import android.content.Context
 import android.media.MediaPlayer
 import androidx.annotation.GuardedBy
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull
 
 /**
  * Media player that plays a single sound on loop, without gaps.
  *
  * See [StackOverflow](https://stackoverflow.com/questions/26274182/not-able-to-achieve-gapless-audio-looping-so-far-on-android).
  */
-class LoopMediaPlayer(private val context: Context, private val resourceId: Int) {
-  @GuardedBy("this")
-  private var currentPlayer: @MonotonicNonNull MediaPlayer? = null
+class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
+  AbstractMediaPlayer<LoopMediaPlayer<T>> {
 
   @GuardedBy("this")
-  private var nextPlayer: @MonotonicNonNull MediaPlayer? = null
+  private var currentPlayer: T = mediaPlayer
 
   @GuardedBy("this")
-  private var volume = 1.0f
+  private var nextPlayer: T = mediaPlayer.copy()
 
-  @GuardedBy("this")
-  private var speed = 1.0f
-
-  @GuardedBy("this")
-  private var speedIncrement = 0.0f
-
-  init {
-    this.currentPlayer = createMediaPlayer()
-    createNextMediaPlayer()
-  }
-
-  /**
-   * Creates a new media player with the configured parameters.
-   */
-  private fun createMediaPlayer() = MediaPlayer.create(context, resourceId)
-
-  /**
-   * Sets params on `mp`. This is done separately from [.createMediaPlayer] because
-   * setting non-zero speed also calls start.
-   */
   @Synchronized
-  private fun setMediaPlayerParams(mp: MediaPlayer) {
-    mp.setVolume(volume, volume)
-    mp.playbackParams = mp.playbackParams.setSpeed(speed)
+  private fun attachPlayers() {
+    currentPlayer.setNextMediaPlayer(nextPlayer)
+    currentPlayer.setOnCompletionListener(this::advanceMediaPlayer)
   }
 
-  /**
-   * Creates and sets the [.nextPlayer] field to continue after [.currentPlayer] is
-   * complete.
-   */
-  @Synchronized
-  private fun createNextMediaPlayer() {
-    nextPlayer = createMediaPlayer()
-    currentPlayer!!.setNextMediaPlayer(nextPlayer)
-    currentPlayer!!.setOnCompletionListener { mediaPlayer: MediaPlayer ->
-      advanceMediaPlayer(mediaPlayer)
-    }
-  }
-
-  /**
-   * Advances `mediaPlayer` to the next player and releases the current `mediaPlayer`.
-   */
+  /** Advances `mediaPlayer` to the next player and releases the current `mediaPlayer`. */
   @Synchronized
   private fun advanceMediaPlayer(mediaPlayer: MediaPlayer) {
+    mediaPlayer.reset()
     mediaPlayer.release()
     currentPlayer = nextPlayer
-    setMediaPlayerParams(currentPlayer!!)
-    createNextMediaPlayer()
+    nextPlayer = currentPlayer.copy()
+    attachPlayers()
   }
 
-  /** Returns true iff this player is currently playing.  */
-  @get:Synchronized val isPlaying: Boolean get() = currentPlayer!!.isPlaying
-
-  /**
-   * Starts this looping player.
-   */
   @Synchronized
-  fun start() {
-    setMediaPlayerParams(currentPlayer!!)
-    currentPlayer!!.start()
+  override fun copy(): LoopMediaPlayer<T> = LoopMediaPlayer(currentPlayer.copy())
+
+  @Synchronized
+  override fun start() {
+    currentPlayer.start()
+    attachPlayers()
   }
 
-  /**
-   * Pauses this looping player.
-   */
   @Synchronized
-  fun pause() {
-    currentPlayer!!.pause()
+  override fun pause() {
+    currentPlayer.pause()
   }
 
-  /**
-   * Sets the volume of this looping player. This volume persists across loops.
-   */
   @Synchronized
-  fun setVolume(volume: Float) {
-    this.volume = volume
-    currentPlayer!!.setVolume(volume, volume)
-    nextPlayer!!.setVolume(volume, volume)
+  override fun stop() {
+    currentPlayer.stop()
   }
 
-  /**
-   * Sets the speed of this looping player.
-   */
   @Synchronized
-  fun setPlaybackSpeed(speed: Float) {
-    this.speed = speed
+  override fun setIsMuted(isMuted: Boolean) {
+    currentPlayer.setIsMuted(isMuted)
+    nextPlayer.setIsMuted(isMuted)
   }
 
-  /** Increases the speed of this looping player by the speed increment.  */
   @Synchronized
-  fun incrementSpeed() {
-    setPlaybackSpeed(speed + speedIncrement)
+  override fun setVolume(volume: Float) {
+    currentPlayer.setVolume(volume)
+    nextPlayer.setVolume(volume)
   }
 
-  /**
-   * Sets the speed increment to increase every play back.
-   */
   @Synchronized
-  fun setAutoAdvanceSpeedIncrement(speedIncrement: Float) {
-    this.speedIncrement = speedIncrement
+  override fun multiplyVolume(ratio: Float) {
+    currentPlayer.multiplyVolume(ratio)
+    nextPlayer.multiplyVolume(ratio)
+  }
+
+  @Synchronized
+  override fun setPlaybackSpeed(speed: Float) {
+    currentPlayer.setPlaybackSpeed(speed)
+    nextPlayer.setPlaybackSpeed(speed)
+    nextPlayer.stop()
+  }
+
+  @Synchronized
+  override fun setPlaybackSpeedIncrement(speedIncrement: Float) {
+    currentPlayer.setPlaybackSpeedIncrement(speedIncrement)
+    nextPlayer.setPlaybackSpeedIncrement(speedIncrement)
+  }
+
+  @Synchronized
+  override fun incrementSpeed() {
+    currentPlayer.incrementSpeed()
+    nextPlayer.incrementSpeed()
+    nextPlayer.stop()
+  }
+
+  /** Applies the given function to current player and next player. */
+  @Synchronized
+  fun applyToPlayers(fn: (T) -> Unit) {
+    fn(currentPlayer)
+    fn(nextPlayer)
+  }
+
+  /** Applies a get on the current player. */
+  @Synchronized
+  fun <R> get(fn: (T) -> R): R {
+    return fn(currentPlayer)
+  }
+
+  override fun setNextMediaPlayer(nextPlayer: LoopMediaPlayer<T>) {
+    throw UnsupportedOperationException("setNextMediaPlayer not supported on already Looping player. ")
+  }
+
+  override fun setOnCompletionListener(listener: (MediaPlayer) -> Unit) {
+    throw UnsupportedOperationException("setOnCompletionListener not supported on already Looping player. ")
   }
 }

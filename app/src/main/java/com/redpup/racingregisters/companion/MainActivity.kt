@@ -55,8 +55,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.redpup.racingregisters.companion.enableNextTrack
 import com.redpup.racingregisters.companion.Event as StateEvent
-import com.redpup.racingregisters.companion.sound.LoopMusic
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.Timer
 import com.redpup.racingregisters.companion.ui.theme.Green90
@@ -99,36 +99,29 @@ class MainActivity : ComponentActivity() {
   private fun setupMusic(context: Context, state: MainActivityState) {
     state.eventHandler.clearSubscribers("setupMusic")
 
-    val music = LoopMusic(context)
-    val backgroundMusic = LoopMusic(context)
-    val transitionInMusic = MediaPlayer.create(context, R.raw.effect_continue)
+    val music = backgroundMusic(context)
+    val backgroundMusic = backgroundMusic(context)
 
     val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
-    music.masterVolume = masterVolume
-    backgroundMusic.masterVolume = masterVolume
-    transitionInMusic.setVolume(masterVolume, masterVolume)
+    music.setVolume(masterVolume)
+    backgroundMusic.setVolume(masterVolume)
+    music.setIsMuted(true)
+    backgroundMusic.setIsMuted(true)
 
-    music.setAutoAdvanceSpeedIncrement(0.05f)
-
-    state.transitionTimer.eventHandler.subscribe(TimerEvent.ACTIVATE, tag="setupMusic") {
-      music.pause()
-      transitionInMusic.start()
-    }
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
-      backgroundMusic.pause()
-      transitionInMusic.stop()
+      backgroundMusic.setIsMuted(true)
+      backgroundMusic.start()
+      music.setIsMuted(false)
       music.start()
       music.enableNextTrack()
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
-      music.pause()
-      backgroundMusic.start()
-      if (backgroundMusic.numEnabledTracks() == 0) {
+      music.setIsMuted(true)
+      backgroundMusic.setIsMuted(false)
+      if (backgroundMusic.get { it.numTracksEnabled() } == 0) {
         backgroundMusic.enableNextTrack()
       }
     }
-
-    music.start()
   }
 
   private fun setupSound(context: Context, state: MainActivityState) {
