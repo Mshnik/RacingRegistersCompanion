@@ -74,10 +74,12 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    val timerDuration = baseContext.resources.getInteger(R.integer.default_duration_seconds)
-    val state = MainActivityState(Timer(timerDuration))
+    val timerDuration = baseContext.resources.getInteger(R.integer.timer_duration_seconds)
+    val resetDuration = baseContext.resources.getInteger(R.integer.reset_duration_seconds)
+    val state = MainActivityState(Timer(timerDuration), Timer(resetDuration))
 
     setupMusic(baseContext, state)
+    setupSound(baseContext, state)
 
     val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
 
@@ -94,18 +96,30 @@ class MainActivity : ComponentActivity() {
 
   private fun setupMusic(context: Context, state: MainActivityState) {
     val music = LoopMusic(context)
-    music.masterVolume = 0.5f
+    music.masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     music.setAutoAdvanceSpeedIncrement(0.05f)
 
-    state.timer.subscribe(TimerEvent.ACTIVATE) {
+    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE) {
       music.musicActive = true
       music.enableNextTrack()
     }
-    state.timer.subscribe(TimerEvent.DEACTIVATE) {
+    state.eventHandler.subscribe(StateEvent.BREAK) {
       music.musicActive = false
     }
 
     music.start()
+  }
+
+  private fun setupSound(context: Context, state: MainActivityState) {
+    val soundEffectStart = MediaPlayer.create(context, R.raw.effect_start)
+    val soundEffectBreak = MediaPlayer.create(context, R.raw.effect_break)
+
+    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE) {
+      soundEffectStart.start()
+    }
+    state.eventHandler.subscribe(StateEvent.BREAK) {
+      soundEffectBreak.start()
+    }
   }
 }
 
@@ -114,8 +128,8 @@ fun RenderTopBar(state: MainActivityState) {
   val size = 50.dp
   var enabled by remember { mutableStateOf(false) }
 
-  state.subscribe(StateEvent.RESET) { enabled = false }
-  state.timer.subscribe(TimerEvent.ACTIVATE) { enabled = true }
+  state.eventHandler.subscribe(StateEvent.RESET) { enabled = false }
+  state.eventHandler.subscribe(StateEvent.START) { enabled = true }
 
   Row(
     modifier = Modifier
@@ -172,13 +186,17 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
   var previousShift by remember { mutableFloatStateOf(0.0F) }
   var previousTotal by remember { mutableFloatStateOf(0.0F) }
 
-  state.timer.subscribe(TimerEvent.TICK) { shift = state.timer.elapsedMillis() / 1000F }
-  state.timer.subscribe(TimerEvent.ACTIVATE) { shiftFactor = state.timer.numResumes.toFloat() }
-  state.timer.subscribe(TimerEvent.DEACTIVATE) {
+  state.timer.eventHandler.subscribe(TimerEvent.TICK) {
+    shift = state.timer.elapsedMillis() / 1000F
+  }
+  state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE) {
+    shiftFactor = state.timer.numResumes.toFloat()
+  }
+  state.eventHandler.subscribe(StateEvent.BREAK) {
     previousTotal += (shift - previousShift) * shiftFactor
     previousShift = shift
   }
-  state.subscribe(StateEvent.RESET) {
+  state.eventHandler.subscribe(StateEvent.RESET) {
     shift = 0.0F
     shiftFactor = 0.0F
     previousShift = 0.0F
@@ -212,9 +230,9 @@ fun RenderedTimer(state: MainActivityState) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    var currentTime by remember { mutableStateOf(state.timer.toString()) }
-    state.timer.subscribe(TimerEvent.SECOND) { currentTime = state.timer.toString() }
-    state.subscribe(StateEvent.RESET) { currentTime = state.timer.toString() }
+    var renderedTime by remember { mutableStateOf(state.timer.toString()) }
+    state.timer.eventHandler.subscribe(TimerEvent.SECOND) { renderedTime = state.timer.toString() }
+    state.eventHandler.subscribe(StateEvent.RESET) { renderedTime = state.timer.toString() }
 
     val timerFont = TextStyle(
       fontFamily = mPlus1Code,
@@ -226,12 +244,12 @@ fun RenderedTimer(state: MainActivityState) {
     )
 
     Box {
-      Text(text = currentTime,
+      Text(text = renderedTime,
            modifier = Modifier
              .semantics { invisibleToUser() }
              .padding(5.dp),
            style = timerFont.copy(drawStyle = Stroke(width = 30F), color = Color.Black))
-      Text(text = currentTime, modifier = Modifier.padding(5.dp), style = timerFont)
+      Text(text = renderedTime, modifier = Modifier.padding(5.dp), style = timerFont)
     }
   }
 }
@@ -255,7 +273,7 @@ fun RenderBreakContinueButton(
   }
   updateColors()
 
-  state.subscribe(StateEvent.RESET) {
+  state.eventHandler.subscribe(StateEvent.RESET) {
     buttonState = initialState
     updateColors()
   }
@@ -271,9 +289,6 @@ fun RenderBreakContinueButton(
 
   val borderThickness = 3.dp
 
-  val soundEffectStart = MediaPlayer.create(LocalContext.current, R.raw.effect_start)
-  val soundEffectBreak = MediaPlayer.create(LocalContext.current, R.raw.effect_break)
-
   Box(
     modifier = modifier
       .clip(RoundedCornerShape(borderThickness * 2))
@@ -282,12 +297,7 @@ fun RenderBreakContinueButton(
   ) {
     Button(
       onClick = {
-        state.timer.toggle()
-        if (state.timer.isActive()) {
-          soundEffectStart.start();
-        } else {
-          soundEffectBreak.start();
-        }
+        state.action(buttonState)
         buttonState = buttonState.toggle()
         updateColors()
       },
@@ -310,7 +320,7 @@ fun RenderBreakContinueButton(
 )
 @Composable
 fun PreviewRenderTopBar() {
-  val state = MainActivityState(Timer(900))
+  val state = MainActivityState(Timer(900), Timer(3))
   RacingRegistersCompanionTheme {
     Surface {
       RenderTopBar(state)
@@ -336,7 +346,7 @@ fun PreviewRenderTopBar() {
 )
 @Composable
 fun PreviewRenderedStartButton() {
-  val state = MainActivityState(Timer(900))
+  val state = MainActivityState(Timer(900), Timer(3))
   RacingRegistersCompanionTheme {
     Surface {
       RenderBreakContinueButton(state = state, Modifier, MainButtonState.START)
@@ -349,7 +359,7 @@ fun PreviewRenderedStartButton() {
 )
 @Composable
 fun PreviewRenderedContinueButton() {
-  val state = MainActivityState(Timer(900))
+  val state = MainActivityState(Timer(900), Timer(3))
   RacingRegistersCompanionTheme {
     Surface {
       RenderBreakContinueButton(state = state, Modifier, MainButtonState.CONTINUE)
@@ -362,7 +372,7 @@ fun PreviewRenderedContinueButton() {
 )
 @Composable
 fun PreviewRenderedBreakButton() {
-  val state = MainActivityState(Timer(900))
+  val state = MainActivityState(Timer(900), Timer(3))
   RacingRegistersCompanionTheme {
     Surface {
       RenderBreakContinueButton(state = state, Modifier, MainButtonState.BREAK)
@@ -375,7 +385,7 @@ fun PreviewRenderedBreakButton() {
 )
 @Composable
 fun PreviewRenderBackground() {
-  val state = MainActivityState(Timer(900))
+  val state = MainActivityState(Timer(900), Timer(3))
   RacingRegistersCompanionTheme {
     Surface {
       RenderBackground(state, 20)

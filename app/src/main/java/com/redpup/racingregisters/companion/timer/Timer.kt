@@ -12,10 +12,7 @@ import kotlin.math.max
  */
 enum class Event {
   TICK,
-  SECOND,
-  ACTIVATE,
-  DEACTIVATE,
-  RESET
+  SECOND
 }
 
 /**
@@ -24,6 +21,7 @@ enum class Event {
 class Timer(
   internal val initialSeconds: Int,
   internal val ticksPerSecond: Int = 100,
+  internal val completionMessage : String = "Done",
 ) {
   init {
     require(ticksPerSecond > 0 && 1000 % ticksPerSecond == 0) {
@@ -40,7 +38,7 @@ class Timer(
   var timer: JavaTimer? = null; private set
 
   private val tickTime = 1000L / ticksPerSecond
-  private val eventHandler = EventHandler<Event>()
+  val eventHandler = EventHandler<Event>()
 
   /** The amount of milliseconds that have passed. */
   fun elapsedMillis(): Long {
@@ -91,7 +89,6 @@ class Timer(
       deactivate()
       ticks = 0
       numResumes = 0
-      eventHandler.handleSubscribers(Event.RESET)
     }
   }
 
@@ -101,7 +98,6 @@ class Timer(
       if (timer == null && remainingSeconds() > 0) {
         timer = timer("Timer", true, tickTime, tickTime) { tick() }
         numResumes++
-        eventHandler.handleSubscribers(Event.ACTIVATE)
       }
     }
   }
@@ -112,7 +108,6 @@ class Timer(
       if (timer != null) {
         timer!!.cancel()
         timer = null
-        eventHandler.handleSubscribers(Event.DEACTIVATE)
       }
     }
   }
@@ -135,27 +130,17 @@ class Timer(
   override fun toString(): String {
     val remaining = remainingSeconds()
     if (remaining == 0) {
-      return "DONE"
+      return completionMessage
     }
 
     val minutes = remaining / 60
     val seconds = remaining % 60
-    if (seconds < 10) {
+    if (minutes == 0) {
+      return "$seconds"
+    } else if (seconds < 10) {
       return "${minutes}:0$seconds"
     } else {
       return "${minutes}:$seconds"
     }
-  }
-
-  /**
-   * Adds a subscriber to this timer for the given event.
-   */
-  fun subscribe(event: Event, sub: () -> Unit) {
-    eventHandler.subscribe(event, sub)
-  }
-
-  /** Clears any existing subscribers. */
-  fun clearSubscribers() {
-    eventHandler.clearSubscribers()
   }
 }

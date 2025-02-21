@@ -16,9 +16,9 @@ class EventHandler<E> {
   /**
    * Adds a subscriber to this timer for the given event.
    */
-  fun subscribe(event: E, sub: () -> Unit) {
+  fun subscribe(vararg events: E, sub: () -> Unit) {
     synchronized(subscriberLock) {
-      subscribers.put(event, sub)
+      events.forEach { subscribers.put(it, sub) }
     }
   }
 
