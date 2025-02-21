@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
     val soundEffectStart = MediaPlayer.create(context, R.raw.effect_start)
     val soundEffectBreak = MediaPlayer.create(context, R.raw.effect_break)
 
-    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupSound") {
+    state.transitionTimer.eventHandler.subscribe(TimerEvent.COMPLETE, tag = "setupSound") {
       soundEffectStart.start()
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupSound") {

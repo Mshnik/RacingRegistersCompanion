@@ -15,6 +15,7 @@ enum class Event {
   SECOND,
   ACTIVATE,
   DEACTIVATE,
+  COMPLETE,
   FINISH
 }
 
@@ -131,6 +132,11 @@ class Timer(
 
     if (ticks % ticksPerIncrement == 0) {
       eventHandler.handleSubscribers(Event.SECOND)
+
+      val remainingIncrements = remainingIncrements()
+      if (remainingIncrements == completeAtIncrements) {
+        eventHandler.handleSubscribers(Event.COMPLETE)
+      }
 
       if (remainingIncrements() == 0) {
         deactivate()

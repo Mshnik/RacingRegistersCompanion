@@ -54,8 +54,8 @@ class MainActivityState(val timer: Timer, val transitionTimer: Timer) {
   /** Begins a transition, executing execute at the end of the transition. */
   private fun transition(execute: () -> Unit) {
     transitionTimer.reset()
-    transitionTimer.eventHandler.clearSubscribers()
-    transitionTimer.eventHandler.subscribe(TimerEvent.FINISH) { execute() }
+    transitionTimer.eventHandler.clearSubscribers("Transition")
+    transitionTimer.eventHandler.subscribe(TimerEvent.FINISH, tag="Transition") { execute() }
     transitionTimer.start()
   }
 
