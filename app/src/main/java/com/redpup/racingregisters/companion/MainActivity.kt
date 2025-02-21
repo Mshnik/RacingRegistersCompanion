@@ -104,15 +104,14 @@ class MainActivity : ComponentActivity() {
     val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     music.setVolume(masterVolume)
     music.setIsMuted(true)
+    music.start()
 
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
-      music.setIsMuted(false)
-      music.start()
       music.enableNextTrack()
+      music.setIsMuted(false)
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
       music.setIsMuted(true)
-      music.stop()
     }
   }
 
