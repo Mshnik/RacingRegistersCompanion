@@ -16,9 +16,11 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
 
   override fun copy(): MultiTrackMediaPlayer<K, T> {
     val player = MultiTrackMediaPlayer(mediaPlayers.mapValues { it.value.copy() })
-    player.isMuted = isMuted
+    player.setIsMuted(isMuted)
+    // Master volume is already applied by copying the volume of the underlying tracks.
+    // Applying it again here would exponentially decay the overall volume over many copies.
     player.masterVolume = masterVolume
-    player.enabledTracks.addAll(enabledTracks)
+    enabledTracks.forEach { player.setTrackEnabled(it, true) }
     return player
   }
 
@@ -35,6 +37,10 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
 
   override fun stop() {
     mediaPlayers.values.forEach { it.stop() }
+  }
+
+  override fun reset() {
+    mediaPlayers.values.forEach { it.reset() }
   }
 
   override fun setIsMuted(isMuted: Boolean) {
@@ -81,14 +87,17 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
   }
 
   override fun setOnCompletionListener(listener: (MediaPlayer) -> Unit) {
-    // Only set on first listener, to avoid exploding listener invocations when this ends.
-    mediaPlayers.values.first().setOnCompletionListener(listener)
-
-    // For all other listeners, make sure to reset and release.
-    mediaPlayers.values.stream().skip(1).forEach { p ->
-      p.setOnCompletionListener { m ->
-        m.reset()
-        m.release()
+    var first = true
+    for (player in mediaPlayers.values) {
+      if (first) {
+        // Only set on first listener, to avoid exploding listener invocations when this ends.
+        player.setOnCompletionListener(listener)
+        first = false
+      } else {
+        player.setOnCompletionListener {
+          it.reset()
+          it.release()
+        }
       }
     }
   }

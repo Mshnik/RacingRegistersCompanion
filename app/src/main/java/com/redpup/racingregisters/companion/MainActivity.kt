@@ -100,27 +100,19 @@ class MainActivity : ComponentActivity() {
     state.eventHandler.clearSubscribers("setupMusic")
 
     val music = backgroundMusic(context)
-    val backgroundMusic = backgroundMusic(context)
 
     val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     music.setVolume(masterVolume)
-    backgroundMusic.setVolume(masterVolume)
     music.setIsMuted(true)
-    backgroundMusic.setIsMuted(true)
 
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
-      backgroundMusic.setIsMuted(true)
-      backgroundMusic.start()
       music.setIsMuted(false)
       music.start()
       music.enableNextTrack()
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
       music.setIsMuted(true)
-      backgroundMusic.setIsMuted(false)
-      if (backgroundMusic.get { it.numTracksEnabled() } == 0) {
-        backgroundMusic.enableNextTrack()
-      }
+      music.stop()
     }
   }
 

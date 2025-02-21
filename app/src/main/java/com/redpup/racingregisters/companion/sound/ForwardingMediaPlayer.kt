@@ -13,7 +13,6 @@ import com.redpup.racingregisters.companion.R
 data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
   AbstractMediaPlayer<ForwardingMediaPlayer> {
   private val mediaPlayer = MediaPlayer.create(context, resourceId)
-  private val resourceName = context.resources.getResourceName(resourceId)
   private var isMuted = false
   private var volume = 1.0F
   private var speed = 1.0F
@@ -21,9 +20,9 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
 
   override fun copy(): ForwardingMediaPlayer {
     val player = ForwardingMediaPlayer(context, resourceId)
-    player.isMuted = isMuted
-    player.volume = volume
-    player.playbackSpeedIncrement = playbackSpeedIncrement
+    player.setIsMuted(isMuted)
+    player.setVolume(volume)
+    player.setPlaybackSpeedIncrement(playbackSpeedIncrement)
     player.speed = speed
     return player
   }
@@ -39,6 +38,10 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
 
   override fun stop() {
     mediaPlayer.stop()
+  }
+
+  override fun reset() {
+    mediaPlayer.reset()
   }
 
   override fun setIsMuted(isMuted: Boolean) {

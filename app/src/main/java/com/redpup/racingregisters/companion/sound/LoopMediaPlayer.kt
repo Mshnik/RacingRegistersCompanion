@@ -19,8 +19,8 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
 
   @Synchronized
   private fun attachPlayers() {
-    currentPlayer.setNextMediaPlayer(nextPlayer)
     currentPlayer.setOnCompletionListener(this::advanceMediaPlayer)
+    currentPlayer.setNextMediaPlayer(nextPlayer)
   }
 
   /** Advances `mediaPlayer` to the next player and releases the current `mediaPlayer`. */
@@ -50,6 +50,11 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   @Synchronized
   override fun stop() {
     currentPlayer.stop()
+  }
+
+  @Synchronized
+  override fun reset() {
+    currentPlayer.reset()
   }
 
   @Synchronized
