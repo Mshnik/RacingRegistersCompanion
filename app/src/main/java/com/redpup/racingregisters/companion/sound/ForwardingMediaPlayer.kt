@@ -44,6 +44,10 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
     mediaPlayer.reset()
   }
 
+  override fun seekToStart() {
+    mediaPlayer.seekTo(0)
+  }
+
   override fun setIsMuted(isMuted: Boolean) {
     this.isMuted = isMuted
     if (isMuted) {

@@ -58,6 +58,11 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   }
 
   @Synchronized
+  override fun seekToStart() {
+    currentPlayer.seekToStart()
+  }
+
+  @Synchronized
   override fun setIsMuted(isMuted: Boolean) {
     currentPlayer.setIsMuted(isMuted)
     nextPlayer.setIsMuted(isMuted)

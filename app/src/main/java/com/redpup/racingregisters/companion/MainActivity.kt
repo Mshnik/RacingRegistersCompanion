@@ -66,7 +66,6 @@ import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionThe
 import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
 import com.redpup.racingregisters.companion.ui.theme.sixtyFour
-import java.lang.reflect.Method
 import kotlin.math.hypot
 
 class MainActivity : ComponentActivity() {
@@ -99,19 +98,26 @@ class MainActivity : ComponentActivity() {
   private fun setupMusic(context: Context, state: MainActivityState) {
     state.eventHandler.clearSubscribers("setupMusic")
 
-    val music = backgroundMusic(context)
+    val mainMusic = backgroundMusic(context)
+    val breakMusic = backgroundMusic(context)
 
     val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
-    music.setVolume(masterVolume)
-    music.setIsMuted(true)
-    music.start()
+    mainMusic.setVolume(masterVolume)
+    breakMusic.setVolume(masterVolume)
+    breakMusic.enableNextTrack()
 
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
-      music.enableNextTrack()
-      music.setIsMuted(false)
+      mainMusic.seekToStart()
+      mainMusic.enableNextTrack()
+      mainMusic.start()
+
+      breakMusic.seekToStart()
+      breakMusic.setIsMuted(true)
+      breakMusic.start()
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
-      music.setIsMuted(true)
+      mainMusic.pause()
+      breakMusic.setIsMuted(false)
     }
   }
 

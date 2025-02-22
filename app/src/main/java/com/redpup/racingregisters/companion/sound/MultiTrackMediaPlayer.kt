@@ -43,6 +43,10 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     mediaPlayers.values.forEach { it.reset() }
   }
 
+  override fun seekToStart() {
+    mediaPlayers.values.forEach { it.seekToStart() }
+  }
+
   override fun setIsMuted(isMuted: Boolean) {
     this.isMuted = isMuted
     mediaPlayers.keys.forEach { updateVolume(it) }

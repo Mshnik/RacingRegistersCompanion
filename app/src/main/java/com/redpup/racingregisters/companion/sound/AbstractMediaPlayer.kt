@@ -26,6 +26,8 @@ interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
   /** Resets this media player. */
   fun reset()
 
+  fun seekToStart()
+
   /**
    * Mutes or unmutes this media player.
    * Retains the old volume value if unmuted.
