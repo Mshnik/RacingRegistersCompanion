@@ -2,6 +2,8 @@ package com.redpup.racingregisters.companion.sound
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.util.Log
+import com.redpup.racingregisters.companion.R
 
 
 /**
@@ -25,8 +27,8 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
   }
 
   override fun start() {
-    mediaPlayer.start()
-    mediaPlayer.playbackParams.setSpeed(speed)
+    // This also starts the media player.
+    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed)
   }
 
   override fun pause() {
@@ -83,7 +85,7 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
   }
 
   override fun incrementSpeed() {
-    setPlaybackSpeed(mediaPlayer.playbackParams.speed + playbackSpeedIncrement)
+    setPlaybackSpeed(speed + playbackSpeedIncrement)
   }
 
   override fun setNextMediaPlayer(nextPlayer: ForwardingMediaPlayer) {

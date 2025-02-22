@@ -60,5 +60,6 @@ fun LoopMediaPlayer<MultiTrackMediaPlayer<Track, ForwardingMediaPlayer>>.enableN
 fun scaleTransitionTimerToMusic(transitionMusic: ForwardingMediaPlayer, state: MainActivityState) {
   val musicDurationMillis = transitionMusic.duration()
   val timerIntervalDuration = (musicDurationMillis / 4.0).toLong()
+  state.transitionTimer.reset()
   state.transitionTimer.setSpeed(timerIntervalDuration, 1)
 }

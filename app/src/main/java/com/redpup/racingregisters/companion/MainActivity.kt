@@ -101,7 +101,8 @@ class MainActivity : ComponentActivity() {
     val breakMusic = backgroundMusic(context)
     val transitionInMusic = transitionMusic(context, state)
 
-    mainMusic.setPlaybackSpeedIncrement(0.1F)
+    mainMusic.setPlaybackSpeedIncrement(0.05F)
+    transitionInMusic.setPlaybackSpeedIncrement(0.05F)
 
     val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     mainMusic.setVolume(masterVolume)
@@ -117,7 +118,9 @@ class MainActivity : ComponentActivity() {
 
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
       if (transitionInMusic.isPlaying()) {
+        transitionInMusic.incrementSpeed()
         transitionInMusic.pause()
+        scaleTransitionTimerToMusic(transitionInMusic, state)
       }
 
       mainMusic.seekToStart()
@@ -129,6 +132,7 @@ class MainActivity : ComponentActivity() {
       breakMusic.start()
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
+      // mainMusic.incrementSpeed()
       mainMusic.pause()
       breakMusic.setIsMuted(false)
     }
