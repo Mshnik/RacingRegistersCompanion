@@ -1,10 +1,7 @@
 package com.redpup.racingregisters.companion.sound
 
 import android.content.Context
-import android.content.res.Resources
 import android.media.MediaPlayer
-import android.util.Log
-import com.redpup.racingregisters.companion.R
 
 
 /**
@@ -44,8 +41,16 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
     mediaPlayer.reset()
   }
 
+  override fun isPlaying(): Boolean {
+    return mediaPlayer.isPlaying
+  }
+
   override fun seekToStart() {
     mediaPlayer.seekTo(0)
+  }
+
+  override fun duration(): Int {
+    return mediaPlayer.duration
   }
 
   override fun setIsMuted(isMuted: Boolean) {

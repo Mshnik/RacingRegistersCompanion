@@ -26,7 +26,14 @@ interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
   /** Resets this media player. */
   fun reset()
 
+  /** Returns true iff this player is currently playing. */
+  fun isPlaying() : Boolean
+
+  /** Seeks this media player to the start of the track. */
   fun seekToStart()
+
+  /** The duration of this track in millis. */
+  fun duration(): Int
 
   /**
    * Mutes or unmutes this media player.

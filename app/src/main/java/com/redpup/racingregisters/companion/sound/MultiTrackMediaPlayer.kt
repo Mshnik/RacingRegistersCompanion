@@ -43,8 +43,17 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     mediaPlayers.values.forEach { it.reset() }
   }
 
+  override fun isPlaying(): Boolean {
+    return mediaPlayers.values.first().isPlaying()
+  }
+
   override fun seekToStart() {
     mediaPlayers.values.forEach { it.seekToStart() }
+  }
+
+  override fun duration(): Int {
+    // Assumes all input players have the same duration.
+    return mediaPlayers.values.first().duration()
   }
 
   override fun setIsMuted(isMuted: Boolean) {

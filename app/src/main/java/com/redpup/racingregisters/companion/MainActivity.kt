@@ -99,23 +99,24 @@ class MainActivity : ComponentActivity() {
 
     val mainMusic = backgroundMusic(context)
     val breakMusic = backgroundMusic(context)
-    val transitionInMusic = MediaPlayer.create(context, R.raw.music_continue_transition)
-    scaleTransitionTimerToMusic(transitionInMusic, state)
+    val transitionInMusic = transitionMusic(context, state)
+
+    mainMusic.setPlaybackSpeedIncrement(0.1F)
 
     val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     mainMusic.setVolume(masterVolume)
     breakMusic.setVolume(masterVolume)
     breakMusic.enableNextTrack()
-    transitionInMusic.setVolume(masterVolume, masterVolume)
+    transitionInMusic.setVolume(masterVolume)
 
     state.eventHandler.subscribe(StateEvent.TRANSITION_TO_CONTINUE, tag = "setupMusic") {
       breakMusic.pause()
-      transitionInMusic.seekTo(0)
+      transitionInMusic.seekToStart()
       transitionInMusic.start()
     }
 
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
-      if (transitionInMusic.isPlaying) {
+      if (transitionInMusic.isPlaying()) {
         transitionInMusic.pause()
       }
 

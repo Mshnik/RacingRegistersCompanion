@@ -58,8 +58,17 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   }
 
   @Synchronized
+  override fun isPlaying(): Boolean {
+    return currentPlayer.isPlaying()
+  }
+
+  @Synchronized
   override fun seekToStart() {
     currentPlayer.seekToStart()
+  }
+
+  override fun duration(): Int {
+    throw UnsupportedOperationException("duration not supported on Looping player. ")
   }
 
   @Synchronized

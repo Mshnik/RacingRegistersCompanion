@@ -34,8 +34,15 @@ fun backgroundMusic(context: Context) =
     )
   )
 
+/** Returns a single track transition to use when returning to the game from break. */
+fun transitionMusic(context: Context, state: MainActivityState): ForwardingMediaPlayer {
+  val mp = ForwardingMediaPlayer(context, R.raw.music_continue_transition)
+  scaleTransitionTimerToMusic(mp, state)
+  return mp
+}
+
 /** Allows enabling tracks based on enum declaration order. */
-fun MultiTrackMediaPlayer<Track, ForwardingMediaPlayer>.enableNextTrack() {
+fun MultiTrackMediaPlayer<Track, *>.enableNextTrack() {
   for (t in Track.entries) {
     if (!this.isTrackEnabled(t)) {
       this.setTrackEnabled(t, true)
@@ -49,8 +56,9 @@ fun LoopMediaPlayer<MultiTrackMediaPlayer<Track, ForwardingMediaPlayer>>.enableN
   this.applyToPlayers { it.enableNextTrack() }
 }
 
-fun scaleTransitionTimerToMusic(transitionMusic : MediaPlayer, state: MainActivityState) {
-  val musicDurationMillis = transitionMusic.duration
+/** Scales the transition timer in state to match the duration of transitionMusic. */
+fun scaleTransitionTimerToMusic(transitionMusic: ForwardingMediaPlayer, state: MainActivityState) {
+  val musicDurationMillis = transitionMusic.duration()
   val timerIntervalDuration = (musicDurationMillis / 4.0).toLong()
   state.transitionTimer.setSpeed(timerIntervalDuration, 1)
 }
