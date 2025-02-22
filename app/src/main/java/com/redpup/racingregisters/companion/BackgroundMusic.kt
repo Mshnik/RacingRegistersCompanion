@@ -1,6 +1,7 @@
 package com.redpup.racingregisters.companion
 
 import android.content.Context
+import android.media.MediaPlayer
 import com.redpup.racingregisters.companion.sound.AbstractMediaPlayer
 import com.redpup.racingregisters.companion.sound.ForwardingMediaPlayer
 import com.redpup.racingregisters.companion.sound.LoopMediaPlayer
@@ -46,4 +47,10 @@ fun MultiTrackMediaPlayer<Track, ForwardingMediaPlayer>.enableNextTrack() {
 /** Allows enabling tracks based on enum declaration order. */
 fun LoopMediaPlayer<MultiTrackMediaPlayer<Track, ForwardingMediaPlayer>>.enableNextTrack() {
   this.applyToPlayers { it.enableNextTrack() }
+}
+
+fun scaleTransitionTimerToMusic(transitionMusic : MediaPlayer, state: MainActivityState) {
+  val musicDurationMillis = transitionMusic.duration
+  val timerIntervalDuration = (musicDurationMillis / 4.0).toLong()
+  state.transitionTimer.setSpeed(timerIntervalDuration, 1)
 }

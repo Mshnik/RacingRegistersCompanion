@@ -27,16 +27,16 @@ enum class Event {
  */
 class Timer(
   internal val initialIncrements: Int,
-  internal val millisPerIncrement: Long = 1000L,
-  internal val ticksPerIncrement: Int = 100,
+  internal var millisPerIncrement: Long = 1000L,
+  internal var ticksPerIncrement: Int = 100,
   internal val completeAtIncrements: Int = 0,
-  internal val completionMessage : String = "DONE",
+  internal val completionMessage: String = "DONE",
 ) {
   init {
-    require(ticksPerIncrement > 0 && millisPerIncrement % ticksPerIncrement == 0L) {
+    check(ticksPerIncrement > 0 && millisPerIncrement % ticksPerIncrement == 0L) {
       "ticksPerIncrement must be positive and evenly divide $millisPerIncrement."
     }
-    require (completeAtIncrements >= 0)
+    require(completeAtIncrements >= 0)
   }
 
   var ticks = 0; internal set
@@ -47,7 +47,6 @@ class Timer(
   @GuardedBy("timerLock")
   var timer: JavaTimer? = null; private set
 
-  private val tickTime = millisPerIncrement / ticksPerIncrement
   val eventHandler = EventHandler<Event>()
 
   /** The amount of milli-Increments that have passed. */
@@ -66,7 +65,7 @@ class Timer(
   }
 
   /** Returns whether this timer is currently active. */
-  fun isActive() : Boolean {
+  fun isActive(): Boolean {
     synchronized(timerLock) {
       return timer != null;
     }
@@ -102,10 +101,23 @@ class Timer(
     }
   }
 
+  /**
+   * Sets the speed of this timer. This can only be done when the timer is not running and
+   * has been reset.*/
+  fun setSpeed(millisPerIncrement: Long, ticksPerIncrement: Int) {
+    check(!isActive() && ticks == 0)
+    check(ticksPerIncrement > 0 && millisPerIncrement % ticksPerIncrement == 0L) {
+      "ticksPerIncrement must be positive and evenly divide $millisPerIncrement."
+    }
+    this.millisPerIncrement = millisPerIncrement
+    this.ticksPerIncrement = ticksPerIncrement
+  }
+
   /** Activates this timer. Does nothing if already active or if this timer is already elapsed. */
   private fun activate() {
     synchronized(timerLock) {
       if (timer == null && remainingIncrements() > 0) {
+        val tickTime = millisPerIncrement / ticksPerIncrement
         timer = timer("Timer", true, tickTime, tickTime) { tick() }
         numResumes++
         eventHandler.handleSubscribers(Event.ACTIVATE)

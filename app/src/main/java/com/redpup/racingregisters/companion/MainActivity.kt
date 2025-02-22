@@ -55,7 +55,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.redpup.racingregisters.companion.enableNextTrack
 import com.redpup.racingregisters.companion.Event as StateEvent
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.Timer
@@ -100,13 +99,26 @@ class MainActivity : ComponentActivity() {
 
     val mainMusic = backgroundMusic(context)
     val breakMusic = backgroundMusic(context)
+    val transitionInMusic = MediaPlayer.create(context, R.raw.music_continue_transition)
+    scaleTransitionTimerToMusic(transitionInMusic, state)
 
     val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     mainMusic.setVolume(masterVolume)
     breakMusic.setVolume(masterVolume)
     breakMusic.enableNextTrack()
+    transitionInMusic.setVolume(masterVolume, masterVolume)
+
+    state.eventHandler.subscribe(StateEvent.TRANSITION_TO_CONTINUE, tag = "setupMusic") {
+      breakMusic.pause()
+      transitionInMusic.seekTo(0)
+      transitionInMusic.start()
+    }
 
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
+      if (transitionInMusic.isPlaying) {
+        transitionInMusic.pause()
+      }
+
       mainMusic.seekToStart()
       mainMusic.enableNextTrack()
       mainMusic.start()
