@@ -1,34 +1,47 @@
 package com.redpup.racingregisters.companion.sound
 
 import android.content.Context
+import android.media.AudioAttributes
 import android.media.MediaPlayer
-import android.util.Log
-import com.redpup.racingregisters.companion.R
 
+private fun create(context: Context, resourceId: Int): MediaPlayer {
+  context.resources.openRawResourceFd(resourceId).use { afd ->
+    val mp = MediaPlayer()
+    mp.setAudioAttributes(AudioAttributes.Builder().build())
+    mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+    afd.close()
+    mp.prepare()
+    return mp
+  }
+}
 
 /**
  * An AbstractMediaPlayer that delegates to an underlying MediaPlayer.
  */
 data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
   AbstractMediaPlayer<ForwardingMediaPlayer> {
-  private val mediaPlayer = MediaPlayer.create(context, resourceId)
+  private val mediaPlayer = create(context, resourceId)
   private var isMuted = false
   private var volume = 1.0F
   private var speed = 1.0F
+  private var pitch = 1.0F
   private var playbackSpeedIncrement = 0.0F
+  private var playbackPitchRatio = 1.0F
 
   override fun copy(): ForwardingMediaPlayer {
     val player = ForwardingMediaPlayer(context, resourceId)
     player.setIsMuted(isMuted)
     player.setVolume(volume)
-    player.setPlaybackSpeedIncrement(playbackSpeedIncrement)
     player.speed = speed
+    player.setPlaybackSpeedIncrement(playbackSpeedIncrement)
+    player.pitch = pitch
+    player.setPlaybackPitchRatio(playbackPitchRatio)
     return player
   }
 
   override fun start() {
     // This also starts the media player.
-    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed)
+    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed).setPitch(pitch)
   }
 
   override fun pause() {
@@ -77,7 +90,6 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
 
   override fun setPlaybackSpeed(speed: Float) {
     this.speed = speed
-    mediaPlayer.playbackParams.setSpeed(speed)
   }
 
   override fun setPlaybackSpeedIncrement(speedIncrement: Float) {
@@ -86,6 +98,18 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
 
   override fun incrementSpeed() {
     setPlaybackSpeed(speed + playbackSpeedIncrement)
+  }
+
+  override fun setPlaybackPitch(pitch: Float) {
+    this.pitch = pitch
+  }
+
+  override fun setPlaybackPitchRatio(pitchRatio: Float) {
+    playbackPitchRatio = pitchRatio
+  }
+
+  override fun incrementPitch() {
+    setPlaybackPitch(pitch * playbackPitchRatio)
   }
 
   override fun setNextMediaPlayer(nextPlayer: ForwardingMediaPlayer) {

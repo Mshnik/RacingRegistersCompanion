@@ -109,6 +109,24 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
     nextPlayer.stop()
   }
 
+  @Synchronized
+  override fun setPlaybackPitch(pitch: Float) {
+    currentPlayer.setPlaybackPitch(pitch)
+    nextPlayer.setPlaybackPitch(pitch)
+  }
+
+  @Synchronized
+  override fun setPlaybackPitchRatio(pitchRatio: Float) {
+    currentPlayer.setPlaybackPitchRatio(pitchRatio)
+    nextPlayer.setPlaybackPitchRatio(pitchRatio)
+  }
+
+  @Synchronized
+  override fun incrementPitch() {
+    currentPlayer.incrementSpeed()
+    nextPlayer.incrementSpeed()
+  }
+
   /** Applies the given function to current player and next player. */
   @Synchronized
   fun applyToPlayers(fn: (T) -> Unit) {

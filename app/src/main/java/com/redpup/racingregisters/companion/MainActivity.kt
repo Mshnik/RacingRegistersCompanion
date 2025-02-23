@@ -102,7 +102,9 @@ class MainActivity : ComponentActivity() {
     val transitionInMusic = transitionMusic(context, state)
 
     mainMusic.setPlaybackSpeedIncrement(0.05F)
+    mainMusic.setPlaybackPitchRatio(1.1224613F)
     transitionInMusic.setPlaybackSpeedIncrement(0.05F)
+    transitionInMusic.setPlaybackPitchRatio(1.1224613F)
 
     val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     mainMusic.setVolume(masterVolume)
@@ -118,7 +120,8 @@ class MainActivity : ComponentActivity() {
 
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
       if (transitionInMusic.isPlaying()) {
-        transitionInMusic.incrementSpeed()
+        // transitionInMusic.incrementSpeed()
+        // transitionInMusic.incrementPitch()
         transitionInMusic.pause()
         scaleTransitionTimerToMusic(transitionInMusic, state)
       }
@@ -133,6 +136,7 @@ class MainActivity : ComponentActivity() {
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
       // mainMusic.incrementSpeed()
+      // mainMusic.incrementPitch()
       mainMusic.pause()
       breakMusic.setIsMuted(false)
     }
