@@ -4,23 +4,23 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 
-private fun create(context: Context, resourceId: Int): MediaPlayer {
-  context.resources.openRawResourceFd(resourceId).use { afd ->
-    val mp = MediaPlayer()
-    mp.setAudioAttributes(AudioAttributes.Builder().build())
-    mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-    afd.close()
-    mp.prepare()
-    return mp
-  }
-}
+// private fun create(context: Context, resourceId: Int): MediaPlayer {
+//   context.resources.openRawResourceFd(resourceId).use { afd ->
+//     val mp = MediaPlayer()
+//     mp.setAudioAttributes(AudioAttributes.Builder().build())
+//     mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+//     afd.close()
+//     mp.prepare()
+//     return mp
+//   }
+// }
 
 /**
  * An AbstractMediaPlayer that delegates to an underlying MediaPlayer.
  */
 data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
   AbstractMediaPlayer<ForwardingMediaPlayer> {
-  private val mediaPlayer = create(context, resourceId)
+  private val mediaPlayer = MediaPlayer.create(context, resourceId)
   private var isMuted = false
   private var volume = 1.0F
   private var speed = 1.0F

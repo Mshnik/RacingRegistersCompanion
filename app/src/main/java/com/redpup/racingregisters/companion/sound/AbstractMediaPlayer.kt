@@ -71,9 +71,6 @@ interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
   /** Sets the player to play after this media player is complete. */
   fun setNextMediaPlayer(nextPlayer: Self)
 
-  /**
-   * Sets a listener to invoke when this media player is complete.
-   * Inputs are the listener that completed and the index within the parent, if any.
-   */
+  /** Sets a listener to invoke when this media player is complete. */
   fun setOnCompletionListener(listener: (MediaPlayer) -> Unit)
 }

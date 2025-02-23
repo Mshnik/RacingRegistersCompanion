@@ -3,6 +3,12 @@ package com.redpup.racingregisters.companion.sound
 import android.media.MediaPlayer
 import androidx.annotation.GuardedBy
 
+/** Applies fn to each value in pair. */
+private fun <T> Pair<T, T>.forEach(fn: (T) -> Unit) {
+  fn(this.first)
+  fn(this.second)
+}
+
 /**
  * Media player that plays a single sound on loop, without gaps.
  *
@@ -12,132 +18,103 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   AbstractMediaPlayer<LoopMediaPlayer<T>> {
 
   @GuardedBy("this")
-  private var currentPlayer: T = mediaPlayer
-
-  @GuardedBy("this")
-  private var nextPlayer: T = mediaPlayer.copy()
+  private var players = Pair(mediaPlayer, mediaPlayer.copy())
 
   @Synchronized
+  private fun players(): Pair<T, T> {
+    return players.copy()
+  }
+
+  /** Attaches completion and next handlers to current. */
   private fun attachPlayers() {
-    currentPlayer.setOnCompletionListener(this::advanceMediaPlayer)
-    currentPlayer.setNextMediaPlayer(nextPlayer)
+    val (current, next) = players()
+    current.setOnCompletionListener { _ -> onCurrentComplete() }
+    current.setNextMediaPlayer(next)
+    next.seekToStart()
   }
 
   /** Advances `mediaPlayer` to the next player and releases the current `mediaPlayer`. */
   @Synchronized
-  private fun advanceMediaPlayer(mediaPlayer: MediaPlayer) {
-    mediaPlayer.reset()
-    mediaPlayer.release()
-    currentPlayer = nextPlayer
-    nextPlayer = currentPlayer.copy()
+  private fun onCurrentComplete() {
+    players = Pair(players.second, players.first.copy())
     attachPlayers()
   }
 
-  @Synchronized
-  override fun copy(): LoopMediaPlayer<T> = LoopMediaPlayer(currentPlayer.copy())
+  override fun copy(): LoopMediaPlayer<T> = LoopMediaPlayer(players().first.copy())
 
-  @Synchronized
   override fun start() {
-    currentPlayer.start()
     attachPlayers()
+    players().first.start()
   }
 
-  @Synchronized
   override fun pause() {
-    currentPlayer.pause()
+    players().first.pause()
   }
 
-  @Synchronized
   override fun stop() {
-    currentPlayer.stop()
+    players().first.stop()
   }
 
-  @Synchronized
   override fun reset() {
-    currentPlayer.reset()
+    players().first.reset()
   }
 
-  @Synchronized
   override fun isPlaying(): Boolean {
-    return currentPlayer.isPlaying()
+    return players().first.isPlaying()
   }
 
-  @Synchronized
   override fun seekToStart() {
-    currentPlayer.seekToStart()
+    players().first.seekToStart()
   }
 
   override fun duration(): Int {
     throw UnsupportedOperationException("duration not supported on Looping player. ")
   }
 
-  @Synchronized
   override fun setIsMuted(isMuted: Boolean) {
-    currentPlayer.setIsMuted(isMuted)
-    nextPlayer.setIsMuted(isMuted)
+    players().forEach { it.setIsMuted(isMuted) }
   }
 
-  @Synchronized
   override fun setVolume(volume: Float) {
-    currentPlayer.setVolume(volume)
-    nextPlayer.setVolume(volume)
+    players().forEach { it.setVolume(volume) }
   }
 
-  @Synchronized
   override fun multiplyVolume(ratio: Float) {
-    currentPlayer.multiplyVolume(ratio)
-    nextPlayer.multiplyVolume(ratio)
+    players().forEach { it.multiplyVolume(ratio) }
   }
 
-  @Synchronized
   override fun setPlaybackSpeed(speed: Float) {
-    currentPlayer.setPlaybackSpeed(speed)
-    nextPlayer.setPlaybackSpeed(speed)
-    nextPlayer.stop()
+    players().forEach { it.setPlaybackSpeed(speed) }
   }
 
-  @Synchronized
   override fun setPlaybackSpeedIncrement(speedIncrement: Float) {
-    currentPlayer.setPlaybackSpeedIncrement(speedIncrement)
-    nextPlayer.setPlaybackSpeedIncrement(speedIncrement)
+    players().forEach { it.setPlaybackSpeedIncrement(speedIncrement) }
   }
 
-  @Synchronized
   override fun incrementSpeed() {
-    currentPlayer.incrementSpeed()
-    nextPlayer.incrementSpeed()
-    nextPlayer.stop()
+    players().forEach { it.incrementSpeed() }
   }
 
-  @Synchronized
   override fun setPlaybackPitch(pitch: Float) {
-    currentPlayer.setPlaybackPitch(pitch)
-    nextPlayer.setPlaybackPitch(pitch)
+    players().forEach { it.setPlaybackPitch(pitch) }
   }
 
-  @Synchronized
   override fun setPlaybackPitchRatio(pitchRatio: Float) {
-    currentPlayer.setPlaybackPitchRatio(pitchRatio)
-    nextPlayer.setPlaybackPitchRatio(pitchRatio)
+    players().forEach { it.setPlaybackPitchRatio(pitchRatio) }
   }
 
-  @Synchronized
   override fun incrementPitch() {
-    currentPlayer.incrementSpeed()
-    nextPlayer.incrementSpeed()
+    players().forEach { it.incrementPitch() }
   }
 
   /** Applies the given function to current player and next player. */
-  @Synchronized
   fun applyToPlayers(fn: (T) -> Unit) {
-    fn(currentPlayer)
-    fn(nextPlayer)
+    players().forEach { fn(it) }
   }
 
   /** Applies a get on the current player. */
-  @Synchronized
   fun <R> get(fn: (T) -> R): R {
-    return fn(currentPlayer)
+    return fn(players().first)
   }
 
   override fun setNextMediaPlayer(nextPlayer: LoopMediaPlayer<T>) {
