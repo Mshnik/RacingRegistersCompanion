@@ -50,24 +50,6 @@ interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
   /** Sets the volume of this media player to the current volume times ratio. */
   fun multiplyVolume(ratio: Float)
 
-  /** Sets the speed of this looping player. */
-  fun setPlaybackSpeed(speed: Float)
-
-  /** Sets the speed increment to increase whenever incrementSpeed() is called. */
-  fun setPlaybackSpeedIncrement(speedIncrement: Float)
-
-  /** Increases the speed of this media player by the speed increment.  */
-  fun incrementSpeed()
-
-  /** Sets the pitch of this looping player.  */
-  fun setPlaybackPitch(pitch: Float)
-
-  /** Sets the speed increment to increase whenever incrementSpeed() is called. */
-  fun setPlaybackPitchRatio(pitchRatio: Float)
-
-  /** Increases the pitch of this media player by the pitch ratio.  */
-  fun incrementPitch()
-
   /** Sets the player to play after this media player is complete. */
   fun setNextMediaPlayer(nextPlayer: Self)
 

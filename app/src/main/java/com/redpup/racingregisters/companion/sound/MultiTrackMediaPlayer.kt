@@ -80,30 +80,6 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     setVolume(masterVolume * ratio)
   }
 
-  override fun setPlaybackSpeed(speed: Float) {
-    mediaPlayers.values.forEach { it.setPlaybackSpeed(speed) }
-  }
-
-  override fun setPlaybackSpeedIncrement(speedIncrement: Float) {
-    mediaPlayers.values.forEach { it.setPlaybackSpeedIncrement(speedIncrement) }
-  }
-
-  override fun incrementSpeed() {
-    mediaPlayers.values.forEach { it.incrementSpeed() }
-  }
-
-  override fun setPlaybackPitch(pitch: Float) {
-    mediaPlayers.values.forEach { it.setPlaybackPitch(pitch) }
-  }
-
-  override fun setPlaybackPitchRatio(pitchRatio: Float) {
-    mediaPlayers.values.forEach { it.setPlaybackPitchRatio(pitchRatio) }
-  }
-
-  override fun incrementPitch() {
-    mediaPlayers.values.forEach { it.incrementPitch() }
-  }
-
   override fun setNextMediaPlayer(nextPlayer: MultiTrackMediaPlayer<K, T>) {
     check(mediaPlayers.keys == nextPlayer.mediaPlayers.keys)
     for (key in mediaPlayers.keys) {

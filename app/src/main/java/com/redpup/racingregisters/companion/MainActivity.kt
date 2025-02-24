@@ -101,10 +101,10 @@ class MainActivity : ComponentActivity() {
     val breakMusic = backgroundMusic(context)
     val transitionInMusic = transitionMusic(context, state)
 
-    mainMusic.setPlaybackSpeedIncrement(0.05F)
-    mainMusic.setPlaybackPitchRatio(1.1224613F)
-    transitionInMusic.setPlaybackSpeedIncrement(0.05F)
-    transitionInMusic.setPlaybackPitchRatio(1.1224613F)
+    // mainMusic.setPlaybackSpeedIncrement(0.05F)
+    // mainMusic.setPlaybackPitchRatio(1.1224613F)
+    // transitionInMusic.setPlaybackSpeedIncrement(0.05F)
+    // transitionInMusic.setPlaybackPitchRatio(1.1224613F)
 
     val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     mainMusic.setVolume(masterVolume)

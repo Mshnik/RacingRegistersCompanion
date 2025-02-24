@@ -3,6 +3,7 @@ package com.redpup.racingregisters.companion.sound
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.util.Log
 
 // private fun create(context: Context, resourceId: Int): MediaPlayer {
 //   context.resources.openRawResourceFd(resourceId).use { afd ->
@@ -23,25 +24,16 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
   private val mediaPlayer = MediaPlayer.create(context, resourceId)
   private var isMuted = false
   private var volume = 1.0F
-  private var speed = 1.0F
-  private var pitch = 1.0F
-  private var playbackSpeedIncrement = 0.0F
-  private var playbackPitchRatio = 1.0F
 
   override fun copy(): ForwardingMediaPlayer {
     val player = ForwardingMediaPlayer(context, resourceId)
     player.setIsMuted(isMuted)
     player.setVolume(volume)
-    player.speed = speed
-    player.setPlaybackSpeedIncrement(playbackSpeedIncrement)
-    player.pitch = pitch
-    player.setPlaybackPitchRatio(playbackPitchRatio)
     return player
   }
 
   override fun start() {
-    // This also starts the media player.
-    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed).setPitch(pitch)
+    mediaPlayer.start()
   }
 
   override fun pause() {
@@ -86,30 +78,6 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
 
   override fun multiplyVolume(ratio: Float) {
     setVolume(volume * ratio)
-  }
-
-  override fun setPlaybackSpeed(speed: Float) {
-    this.speed = speed
-  }
-
-  override fun setPlaybackSpeedIncrement(speedIncrement: Float) {
-    playbackSpeedIncrement = speedIncrement
-  }
-
-  override fun incrementSpeed() {
-    setPlaybackSpeed(speed + playbackSpeedIncrement)
-  }
-
-  override fun setPlaybackPitch(pitch: Float) {
-    this.pitch = pitch
-  }
-
-  override fun setPlaybackPitchRatio(pitchRatio: Float) {
-    playbackPitchRatio = pitchRatio
-  }
-
-  override fun incrementPitch() {
-    setPlaybackPitch(pitch * playbackPitchRatio)
   }
 
   override fun setNextMediaPlayer(nextPlayer: ForwardingMediaPlayer) {

@@ -83,30 +83,6 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
     players().forEach { it.multiplyVolume(ratio) }
   }
 
-  override fun setPlaybackSpeed(speed: Float) {
-    players().forEach { it.setPlaybackSpeed(speed) }
-  }
-
-  override fun setPlaybackSpeedIncrement(speedIncrement: Float) {
-    players().forEach { it.setPlaybackSpeedIncrement(speedIncrement) }
-  }
-
-  override fun incrementSpeed() {
-    players().forEach { it.incrementSpeed() }
-  }
-
-  override fun setPlaybackPitch(pitch: Float) {
-    players().forEach { it.setPlaybackPitch(pitch) }
-  }
-
-  override fun setPlaybackPitchRatio(pitchRatio: Float) {
-    players().forEach { it.setPlaybackPitchRatio(pitchRatio) }
-  }
-
-  override fun incrementPitch() {
-    players().forEach { it.incrementPitch() }
-  }
-
   /** Applies the given function to current player and next player. */
   fun applyToPlayers(fn: (T) -> Unit) {
     players().forEach { fn(it) }
