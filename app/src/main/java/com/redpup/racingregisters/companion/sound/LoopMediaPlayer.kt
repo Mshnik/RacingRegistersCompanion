@@ -26,31 +26,33 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   }
 
   /** Attaches completion and next handlers to current. */
-  private fun attachPlayers() {
-    val (current, next) = players()
+  private fun attachPlayers(current: T, next: T) {
     current.setOnCompletionListener { _ -> onCurrentComplete() }
     current.setNextMediaPlayer(next)
     next.seekToStart()
   }
 
-  /** Advances `mediaPlayer` to the next player and releases the current `mediaPlayer`. */
+  /** Advances to the next player. */
   @Synchronized
   private fun onCurrentComplete() {
-    players = Pair(players.second, players.first.copy())
-    players.second.prepareAsync { _ -> attachPlayers() }
+    val next = players.second
+    val following = players.first.copy()
+    players = Pair(next, following)
+    following.prepareAsync { attachPlayers(next, following) }
   }
 
   override fun numMediaPlayers() = 2 * players().first.numMediaPlayers()
 
   override fun copy(): LoopMediaPlayer<T> = LoopMediaPlayer(players().first.copy())
 
-  override fun prepareAsync(listener: (MediaPlayer) -> Unit) {
+  override fun prepareAsync(listener: () -> Unit) {
     players().forEach { it.prepareAsync(listener) }
   }
 
   override fun start() {
-    attachPlayers()
-    players().first.start()
+    val (current, next) = players()
+    attachPlayers(current, next)
+    current.start()
   }
 
   override fun pause() {

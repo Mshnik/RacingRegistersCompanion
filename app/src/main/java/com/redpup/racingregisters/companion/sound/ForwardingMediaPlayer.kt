@@ -39,8 +39,8 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
     return player
   }
 
-  override fun prepareAsync(listener: (MediaPlayer) -> Unit) {
-    mediaPlayer.setOnPreparedListener(listener)
+  override fun prepareAsync(listener: () -> Unit) {
+    mediaPlayer.setOnPreparedListener { listener.invoke() }
     mediaPlayer.prepareAsync()
   }
 

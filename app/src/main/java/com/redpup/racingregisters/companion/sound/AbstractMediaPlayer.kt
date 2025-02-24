@@ -21,7 +21,7 @@ interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
    * Prepares this player, registering a callback when this is ready.
    * Must be called before starting in any way, but must only be called once.
    */
-  fun prepareAsync(listener: (MediaPlayer) -> Unit)
+  fun prepareAsync(listener: () -> Unit)
 
   /** Starts playing this media player. */
   fun start()

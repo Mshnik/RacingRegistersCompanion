@@ -26,7 +26,7 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     return player
   }
 
-  override fun prepareAsync(listener: (MediaPlayer) -> Unit) {
+  override fun prepareAsync(listener: () -> Unit) {
     mediaPlayers.values.forEach { it.prepareAsync(listener) }
   }
 
