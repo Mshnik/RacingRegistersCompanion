@@ -14,6 +14,8 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
   private val tracksLock = Object()
   private val enabledTracks = mutableSetOf<K>()
 
+  override fun numMediaPlayers() = mediaPlayers.values.sumOf { it.numMediaPlayers() }
+
   override fun copy(): MultiTrackMediaPlayer<K, T> {
     val player = MultiTrackMediaPlayer(mediaPlayers.mapValues { it.value.copy() })
     player.setIsMuted(isMuted)
@@ -22,6 +24,10 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     player.masterVolume = masterVolume
     enabledTracks.forEach { player.setTrackEnabled(it, true) }
     return player
+  }
+
+  override fun prepareAsync(listener: (MediaPlayer) -> Unit) {
+    mediaPlayers.values.forEach { it.prepareAsync(listener) }
   }
 
   override fun start() {

@@ -37,10 +37,16 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   @Synchronized
   private fun onCurrentComplete() {
     players = Pair(players.second, players.first.copy())
-    attachPlayers()
+    players.second.prepareAsync { _ -> attachPlayers() }
   }
 
+  override fun numMediaPlayers() = 2 * players().first.numMediaPlayers()
+
   override fun copy(): LoopMediaPlayer<T> = LoopMediaPlayer(players().first.copy())
+
+  override fun prepareAsync(listener: (MediaPlayer) -> Unit) {
+    players().forEach { it.prepareAsync(listener) }
+  }
 
   override fun start() {
     attachPlayers()

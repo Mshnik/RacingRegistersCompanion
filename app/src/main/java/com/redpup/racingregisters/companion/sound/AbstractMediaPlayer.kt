@@ -8,11 +8,20 @@ import android.media.MediaPlayer
  */
 interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
 
+  /** How many players are wrapped by this media player. */
+  fun numMediaPlayers() : Int
+
   /**
    * Copies this to a new AbstractMediaPlayer.
    * This should only be invoked before volume and speed methods are called.
    */
   fun copy(): Self
+
+  /**
+   * Prepares this player, registering a callback when this is ready.
+   * Must be called before starting in any way, but must only be called once.
+   */
+  fun prepareAsync(listener: (MediaPlayer) -> Unit)
 
   /** Starts playing this media player. */
   fun start()

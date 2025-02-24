@@ -33,6 +33,7 @@ enum class Event {
 /** Wrapper on mutable state visually displayed in this activity.*/
 class MainActivityState(val timer: Timer, val transitionTimer: Timer) {
   val eventHandler = EventHandler<Event>()
+  var isMusicPrepared = false
 
   /** Invoked when the button is pushed. */
   fun action(buttonState: MainButtonState) {

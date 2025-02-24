@@ -99,7 +99,7 @@ class MainActivity : ComponentActivity() {
 
     val mainMusic = backgroundMusic(context)
     val breakMusic = backgroundMusic(context)
-    val transitionInMusic = transitionMusic(context, state)
+    val transitionInMusic = transitionMusic(context)
 
     // mainMusic.setPlaybackSpeedIncrement(0.05F)
     // mainMusic.setPlaybackPitchRatio(1.1224613F)
@@ -140,6 +140,13 @@ class MainActivity : ComponentActivity() {
       mainMusic.pause()
       breakMusic.setIsMuted(false)
     }
+
+    // TODO: Probably need to prevent main button push before these are complete.
+    // But in the short term, fixable by just not pressing it for the first second after
+    // opening the app.
+    mainMusic.prepareAsync {}
+    breakMusic.prepareAsync {}
+    transitionInMusic.prepareAsync { scaleTransitionTimerToMusic(transitionInMusic, state) }
   }
 
   private fun setupSound(context: Context, state: MainActivityState) {

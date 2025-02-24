@@ -35,10 +35,8 @@ fun backgroundMusic(context: Context) =
   )
 
 /** Returns a single track transition to use when returning to the game from break. */
-fun transitionMusic(context: Context, state: MainActivityState): ForwardingMediaPlayer {
-  val mp = ForwardingMediaPlayer(context, R.raw.music_continue_transition)
-  scaleTransitionTimerToMusic(mp, state)
-  return mp
+fun transitionMusic(context: Context): ForwardingMediaPlayer {
+  return ForwardingMediaPlayer(context, R.raw.music_continue_transition)
 }
 
 /** Allows enabling tracks based on enum declaration order. */
