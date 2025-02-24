@@ -59,6 +59,12 @@ interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
   /** Sets the volume of this media player to the current volume times ratio. */
   fun multiplyVolume(ratio: Float)
 
+  /** Sets the speed of the media player. Only updates when this media player starts playing. */
+  fun setSpeed(speed : Float)
+
+  /** Multiplies the speed of this media player by ratio. */
+  fun multiplySpeed(ratio : Float)
+
   /** Sets the pitch of the media player. Only updates when this media player starts playing. */
   fun setPitch(pitch : Float)
 

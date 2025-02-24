@@ -88,6 +88,14 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     setVolume(masterVolume * ratio)
   }
 
+  override fun setSpeed(speed: Float) {
+    mediaPlayers.values.forEach { it.setSpeed(speed) }
+  }
+
+  override fun multiplySpeed(ratio: Float) {
+    mediaPlayers.values.forEach { it.multiplySpeed(ratio) }
+  }
+
   override fun setPitch(pitch: Float) {
     mediaPlayers.values.forEach { it.setPitch(pitch) }
   }

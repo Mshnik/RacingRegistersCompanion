@@ -140,6 +140,7 @@ class MainActivity : ComponentActivity() {
     // TODO: Probably need to prevent main button push before these are complete.
     // But in the short term, fixable by just not pressing it for the first second after
     // opening the app.
+    // Can now use ForkedListener to do this! Yay.
     mainMusic.prepareAsync {}
     breakMusic.prepareAsync {}
     transitionInMusic.prepareAsync { scaleTransitionTimerToMusic(transitionInMusic, state) }

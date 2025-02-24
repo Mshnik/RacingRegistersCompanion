@@ -34,6 +34,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   private var isPrepared = false
   private var isMuted = false
   private var volume = 1.0F
+  private var speed = 1.0F
   private var pitch = 1.0F
 
   override fun numMediaPlayers() = 1
@@ -42,6 +43,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
     val player = ForwardingMediaPlayer(context, resourceId)
     player.setIsMuted(isMuted)
     player.setVolume(volume)
+    player.setSpeed(speed)
     player.setPitch(pitch)
     return player
   }
@@ -51,7 +53,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
       isPrepared = true
       listener.invoke()
     }
-    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setPitch(pitch)
+    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed).setPitch(pitch)
     mediaPlayer.prepareAsync()
   }
 
@@ -102,6 +104,14 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
 
   override fun multiplyVolume(ratio: Float) {
     setVolume(volume * ratio)
+  }
+
+  override fun setSpeed(speed: Float) {
+    this.speed = speed
+  }
+
+  override fun multiplySpeed(ratio: Float) {
+    setSpeed(speed * ratio)
   }
 
   override fun setPitch(pitch: Float) {
