@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.util.Log
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Creates a new MediaPlayer from the given args.
@@ -21,14 +22,19 @@ private fun create(context: Context, resourceId: Int): MediaPlayer {
   }
 }
 
+private val idCounter = AtomicInteger()
+
 /**
  * An AbstractMediaPlayer that delegates to an underlying MediaPlayer.
  */
-data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
+class ForwardingMediaPlayer(private val context: Context, private val resourceId: Int) :
   AbstractMediaPlayer<ForwardingMediaPlayer> {
   private val mediaPlayer = create(context, resourceId)
+  private val id = idCounter.getAndIncrement()
+  private var isPrepared = false
   private var isMuted = false
   private var volume = 1.0F
+  private var pitch = 1.0F
 
   override fun numMediaPlayers() = 1
 
@@ -36,15 +42,21 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
     val player = ForwardingMediaPlayer(context, resourceId)
     player.setIsMuted(isMuted)
     player.setVolume(volume)
+    player.setPitch(pitch)
     return player
   }
 
   override fun prepareAsync(listener: () -> Unit) {
-    mediaPlayer.setOnPreparedListener { listener.invoke() }
+    mediaPlayer.setOnPreparedListener {
+      isPrepared = true
+      listener.invoke()
+    }
+    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setPitch(pitch)
     mediaPlayer.prepareAsync()
   }
 
   override fun start() {
+    check(isPrepared) { "Player $id is not prepared" }
     mediaPlayer.start()
   }
 
@@ -92,7 +104,17 @@ data class ForwardingMediaPlayer(val context: Context, val resourceId: Int) :
     setVolume(volume * ratio)
   }
 
+  override fun setPitch(pitch: Float) {
+    this.pitch = pitch
+  }
+
+  override fun multiplyPitch(ratio: Float) {
+    setPitch(pitch * ratio)
+  }
+
   override fun setNextMediaPlayer(nextPlayer: ForwardingMediaPlayer) {
+    check(isPrepared) { "Player $id is not prepared" }
+    check(nextPlayer.isPrepared) { "Player ${nextPlayer.id} is not prepared" }
     mediaPlayer.setNextMediaPlayer(nextPlayer.mediaPlayer)
   }
 

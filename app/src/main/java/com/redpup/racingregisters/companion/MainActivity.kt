@@ -66,6 +66,7 @@ import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
 import com.redpup.racingregisters.companion.ui.theme.sixtyFour
 import kotlin.math.hypot
+import kotlin.math.pow
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,11 +102,6 @@ class MainActivity : ComponentActivity() {
     val breakMusic = backgroundMusic(context)
     val transitionInMusic = transitionMusic(context)
 
-    // mainMusic.setPlaybackSpeedIncrement(0.05F)
-    // mainMusic.setPlaybackPitchRatio(1.1224613F)
-    // transitionInMusic.setPlaybackSpeedIncrement(0.05F)
-    // transitionInMusic.setPlaybackPitchRatio(1.1224613F)
-
     val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
     mainMusic.setVolume(masterVolume)
     breakMusic.setVolume(masterVolume)
@@ -136,7 +132,7 @@ class MainActivity : ComponentActivity() {
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
       // mainMusic.incrementSpeed()
-      // mainMusic.incrementPitch()
+      // mainMusic.multiplyPitch(2.0.pow(1.0 / 6).toFloat())
       mainMusic.pause()
       breakMusic.setIsMuted(false)
     }

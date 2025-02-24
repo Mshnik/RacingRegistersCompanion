@@ -1,6 +1,7 @@
 package com.redpup.racingregisters.companion.sound
 
 import android.media.MediaPlayer
+import com.redpup.racingregisters.companion.event.ForkedListener
 
 /**
  * An AbstractMediaPlayer that wraps many MediaPlayers and operates on them in sync.
@@ -27,7 +28,8 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
   }
 
   override fun prepareAsync(listener: () -> Unit) {
-    mediaPlayers.values.forEach { it.prepareAsync(listener) }
+    val fork = ForkedListener<Unit>(mediaPlayers.size) { listener() }
+    mediaPlayers.values.forEach { it.prepareAsync { fork.handle(Unit) } }
   }
 
   override fun start() {
@@ -84,6 +86,14 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
 
   override fun multiplyVolume(ratio: Float) {
     setVolume(masterVolume * ratio)
+  }
+
+  override fun setPitch(pitch: Float) {
+    mediaPlayers.values.forEach { it.setPitch(pitch) }
+  }
+
+  override fun multiplyPitch(ratio: Float) {
+    mediaPlayers.values.forEach { it.multiplyPitch(ratio) }
   }
 
   override fun setNextMediaPlayer(nextPlayer: MultiTrackMediaPlayer<K, T>) {

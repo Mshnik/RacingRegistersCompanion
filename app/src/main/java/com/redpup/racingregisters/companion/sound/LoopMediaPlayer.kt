@@ -2,6 +2,7 @@ package com.redpup.racingregisters.companion.sound
 
 import android.media.MediaPlayer
 import androidx.annotation.GuardedBy
+import com.redpup.racingregisters.companion.event.ForkedListener
 
 /** Applies fn to each value in pair. */
 private fun <T> Pair<T, T>.forEach(fn: (T) -> Unit) {
@@ -46,7 +47,8 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   override fun copy(): LoopMediaPlayer<T> = LoopMediaPlayer(players().first.copy())
 
   override fun prepareAsync(listener: () -> Unit) {
-    players().forEach { it.prepareAsync(listener) }
+    val fork = ForkedListener<Unit>(2) { listener() }
+    players().forEach { it.prepareAsync { fork.handle(Unit) } }
   }
 
   override fun start() {
@@ -89,6 +91,14 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
 
   override fun multiplyVolume(ratio: Float) {
     players().forEach { it.multiplyVolume(ratio) }
+  }
+
+  override fun setPitch(pitch: Float) {
+    players().forEach { it.setPitch(pitch) }
+  }
+
+  override fun multiplyPitch(ratio: Float) {
+    players().forEach { it.multiplyPitch(ratio) }
   }
 
   /** Applies the given function to current player and next player. */
