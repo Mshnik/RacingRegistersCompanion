@@ -51,6 +51,10 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     mediaPlayers.values.forEach { it.reset() }
   }
 
+  override fun release() {
+    mediaPlayers.values.forEach { it.release() }
+  }
+
   override fun isPlaying(): Boolean {
     return mediaPlayers.values.first().isPlaying()
   }
@@ -111,12 +115,12 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     }
   }
 
-  override fun setOnCompletionListener(listener: (MediaPlayer) -> Unit) {
+  override fun setOnCompletionListener(listener: (MultiTrackMediaPlayer<K, T>) -> Unit) {
     var first = true
     for (player in mediaPlayers.values) {
       if (first) {
         // Only set on first listener, to avoid exploding listener invocations when this ends.
-        player.setOnCompletionListener(listener)
+        player.setOnCompletionListener { listener(this) }
         first = false
       } else {
         player.setOnCompletionListener {

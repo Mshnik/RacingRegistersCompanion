@@ -1,6 +1,5 @@
 package com.redpup.racingregisters.companion.sound
 
-import android.media.MediaPlayer
 import androidx.annotation.GuardedBy
 import com.redpup.racingregisters.companion.event.ForkedListener
 
@@ -69,6 +68,10 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
     players().first.reset()
   }
 
+  override fun release() {
+    players().forEach { it.release() }
+  }
+
   override fun isPlaying(): Boolean {
     return players().first.isPlaying()
   }
@@ -123,7 +126,7 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
     throw UnsupportedOperationException("setNextMediaPlayer not supported on already Looping player. ")
   }
 
-  override fun setOnCompletionListener(listener: (MediaPlayer) -> Unit) {
+  override fun setOnCompletionListener(listener: (LoopMediaPlayer<T>) -> Unit) {
     throw UnsupportedOperationException("setOnCompletionListener not supported on already Looping player. ")
   }
 }

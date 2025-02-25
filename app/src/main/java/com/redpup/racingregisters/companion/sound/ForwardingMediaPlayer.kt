@@ -74,6 +74,10 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
     mediaPlayer.reset()
   }
 
+  override fun release() {
+    mediaPlayer.release()
+  }
+
   override fun isPlaying(): Boolean {
     return mediaPlayer.isPlaying
   }
@@ -128,7 +132,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
     mediaPlayer.setNextMediaPlayer(nextPlayer.mediaPlayer)
   }
 
-  override fun setOnCompletionListener(listener: (MediaPlayer) -> Unit) {
-    mediaPlayer.setOnCompletionListener(listener)
+  override fun setOnCompletionListener(listener: (ForwardingMediaPlayer) -> Unit) {
+    mediaPlayer.setOnCompletionListener { listener(this) }
   }
 }

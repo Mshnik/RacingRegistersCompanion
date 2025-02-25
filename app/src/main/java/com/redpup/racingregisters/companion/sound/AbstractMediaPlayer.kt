@@ -35,6 +35,9 @@ interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
   /** Resets this media player. */
   fun reset()
 
+  /** Releases this media player. It cannot be used afterwards.*/
+  fun release()
+
   /** Returns true iff this player is currently playing. */
   fun isPlaying() : Boolean
 
@@ -75,5 +78,5 @@ interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
   fun setNextMediaPlayer(nextPlayer: Self)
 
   /** Sets a listener to invoke when this media player is complete. */
-  fun setOnCompletionListener(listener: (MediaPlayer) -> Unit)
+  fun setOnCompletionListener(listener: (Self) -> Unit)
 }
