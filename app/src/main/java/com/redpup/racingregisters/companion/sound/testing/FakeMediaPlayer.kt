@@ -66,6 +66,10 @@ class FakeMediaPlayer(
     return this
   }
 
+  override fun applyPlaybackParams(): FakeMediaPlayer {
+    return this
+  }
+
   /** Synchronously prepares this player. */
   fun prepare(): FakeMediaPlayer {
     check(state == State.INITIALIZED || state == State.STOPPED)

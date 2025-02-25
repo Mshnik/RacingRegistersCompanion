@@ -48,18 +48,25 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
     return player
   }
 
+  /** Applies fields to [mediaPlayer]'s playback params. */
+  override fun applyPlaybackParams() : ForwardingMediaPlayer {
+    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed).setPitch(pitch)
+    return this
+  }
+
   override fun prepareAsync(listener: () -> Unit) : ForwardingMediaPlayer {
     mediaPlayer.setOnPreparedListener {
       isPrepared = true
       listener.invoke()
     }
-    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed).setPitch(pitch)
+    applyPlaybackParams()
     mediaPlayer.prepareAsync()
     return this
   }
 
   override fun start() : ForwardingMediaPlayer {
     check(isPrepared) { "Player $id is not prepared" }
+    applyPlaybackParams()
     mediaPlayer.start()
     return this
   }

@@ -24,6 +24,9 @@ interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
    */
   fun prepareAsync(listener: () -> Unit): Self
 
+  /** Applies necessary state to the playback params inside this player. */
+  fun applyPlaybackParams() : Self
+
   /** Starts playing this media player. Returns this. */
   @CanIgnoreReturnValue
   fun start(): Self

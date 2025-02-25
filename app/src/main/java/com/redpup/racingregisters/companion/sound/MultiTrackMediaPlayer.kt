@@ -1,6 +1,5 @@
 package com.redpup.racingregisters.companion.sound
 
-import android.media.MediaPlayer
 import com.redpup.racingregisters.companion.event.ForkedListener
 
 /**
@@ -30,6 +29,11 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
   override fun prepareAsync(listener: () -> Unit): MultiTrackMediaPlayer<K, T> {
     val fork = ForkedListener<Unit>(mediaPlayers.size, {}, { listener() })
     mediaPlayers.values.forEach { it.prepareAsync { fork.handle(Unit) } }
+    return this
+  }
+
+  override fun applyPlaybackParams(): MultiTrackMediaPlayer<K, T> {
+    mediaPlayers.values.forEach { it.applyPlaybackParams() }
     return this
   }
 

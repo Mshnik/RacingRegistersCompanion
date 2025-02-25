@@ -131,9 +131,9 @@ class MainActivity : ComponentActivity() {
       breakMusic.start()
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
-      // mainMusic.incrementSpeed()
-      // mainMusic.multiplyPitch(2.0.pow(1.0 / 6).toFloat())
       mainMusic.pause()
+      // mainMusic.incrementSpeed()
+      mainMusic.multiplyPitch(2.0.pow(1.0 / 6).toFloat())
       breakMusic.setIsMuted(false)
     }
 

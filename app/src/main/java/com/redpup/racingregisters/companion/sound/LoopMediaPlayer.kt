@@ -29,6 +29,8 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   private fun attachPlayers(current: T, next: T) {
     current.setOnCompletionListener { _ -> onCurrentComplete() }
     current.setNextMediaPlayer(next)
+    next.applyPlaybackParams()
+    next.pause()
     next.seekToStart()
   }
 
@@ -48,6 +50,11 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   override fun prepareAsync(listener: () -> Unit): LoopMediaPlayer<T> {
     val fork = ForkedListener<Unit>(2, {}, { listener() })
     players().forEach { it.prepareAsync { fork.handle(Unit) } }
+    return this
+  }
+
+  override fun applyPlaybackParams(): LoopMediaPlayer<T> {
+    players().forEach { it.applyPlaybackParams() }
     return this
   }
 
