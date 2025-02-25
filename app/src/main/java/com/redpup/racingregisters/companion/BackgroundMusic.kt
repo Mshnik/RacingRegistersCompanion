@@ -25,11 +25,11 @@ fun backgroundMusic(context: Context) =
   LoopMediaPlayer(
     MultiTrackMediaPlayer(
       mapOf(
-        Track.DRUMS_1 to ForwardingMediaPlayer(context, R.raw.music_drums_1),
-        Track.DRUMS_2 to ForwardingMediaPlayer(context, R.raw.music_drums_2),
-        Track.LEAD to ForwardingMediaPlayer(context, R.raw.music_lead),
-        Track.PAD to ForwardingMediaPlayer(context, R.raw.music_pad),
-        Track.BASS to ForwardingMediaPlayer(context, R.raw.music_bass)
+        Track.DRUMS_1 to ForwardingMediaPlayer(context, R.raw.music_drums_1).setVolume(1.0F),
+        Track.DRUMS_2 to ForwardingMediaPlayer(context, R.raw.music_drums_2).setVolume(0.9F),
+        Track.LEAD to ForwardingMediaPlayer(context, R.raw.music_lead).setVolume(1.0F),
+        Track.PAD to ForwardingMediaPlayer(context, R.raw.music_pad).setVolume(0.6F),
+        Track.BASS to ForwardingMediaPlayer(context, R.raw.music_bass).setVolume(0.6F)
       )
     )
   )

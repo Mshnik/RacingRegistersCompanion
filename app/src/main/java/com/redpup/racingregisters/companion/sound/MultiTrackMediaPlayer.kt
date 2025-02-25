@@ -27,40 +27,47 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     return player
   }
 
-  override fun prepareAsync(listener: () -> Unit) {
+  override fun prepareAsync(listener: () -> Unit): MultiTrackMediaPlayer<K, T> {
     val fork = ForkedListener<Unit>(mediaPlayers.size, {}, { listener() })
     mediaPlayers.values.forEach { it.prepareAsync { fork.handle(Unit) } }
+    return this
   }
 
-  override fun start() {
+  override fun start(): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.entries.forEach {
       updateVolume(it.key)
       it.value.start()
     }
+    return this
   }
 
-  override fun pause() {
+  override fun pause(): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.values.forEach { it.pause() }
+    return this
   }
 
-  override fun stop() {
+  override fun stop(): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.values.forEach { it.stop() }
+    return this
   }
 
-  override fun reset() {
+  override fun reset(): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.values.forEach { it.reset() }
+    return this
   }
 
-  override fun release() {
+  override fun release(): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.values.forEach { it.release() }
+    return this
   }
 
   override fun isPlaying(): Boolean {
     return mediaPlayers.values.first().isPlaying()
   }
 
-  override fun seekToStart() {
+  override fun seekToStart(): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.values.forEach { it.seekToStart() }
+    return this
   }
 
   override fun duration(): Int {
@@ -68,9 +75,10 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     return mediaPlayers.values.first().duration()
   }
 
-  override fun setIsMuted(isMuted: Boolean) {
+  override fun setIsMuted(isMuted: Boolean): MultiTrackMediaPlayer<K, T> {
     this.isMuted = isMuted
     mediaPlayers.keys.forEach { updateVolume(it) }
+    return this
   }
 
   /** Updates track volume based on set volume args. */
@@ -80,42 +88,49 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     }
   }
 
-  override fun setVolume(volume: Float) {
+  override fun setVolume(volume: Float): MultiTrackMediaPlayer<K, T> {
     if (volume != masterVolume) {
       val ratioDelta = volume / masterVolume
       mediaPlayers.values.forEach { it.multiplyVolume(ratioDelta) }
       masterVolume = volume
     }
+    return this
   }
 
-  override fun multiplyVolume(ratio: Float) {
+  override fun multiplyVolume(ratio: Float): MultiTrackMediaPlayer<K, T> {
     setVolume(masterVolume * ratio)
+    return this
   }
 
-  override fun setSpeed(speed: Float) {
+  override fun setSpeed(speed: Float): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.values.forEach { it.setSpeed(speed) }
+    return this
   }
 
-  override fun multiplySpeed(ratio: Float) {
+  override fun multiplySpeed(ratio: Float): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.values.forEach { it.multiplySpeed(ratio) }
+    return this
   }
 
-  override fun setPitch(pitch: Float) {
+  override fun setPitch(pitch: Float): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.values.forEach { it.setPitch(pitch) }
+    return this
   }
 
-  override fun multiplyPitch(ratio: Float) {
+  override fun multiplyPitch(ratio: Float): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.values.forEach { it.multiplyPitch(ratio) }
+    return this
   }
 
-  override fun setNextMediaPlayer(nextPlayer: MultiTrackMediaPlayer<K, T>) {
+  override fun setNextMediaPlayer(nextPlayer: MultiTrackMediaPlayer<K, T>): MultiTrackMediaPlayer<K, T> {
     check(mediaPlayers.keys == nextPlayer.mediaPlayers.keys)
     for (key in mediaPlayers.keys) {
       mediaPlayers[key]!!.setNextMediaPlayer(nextPlayer.mediaPlayers[key]!!)
     }
+    return this
   }
 
-  override fun setOnCompletionListener(listener: (MultiTrackMediaPlayer<K, T>) -> Unit) {
+  override fun setOnCompletionListener(listener: (MultiTrackMediaPlayer<K, T>) -> Unit): MultiTrackMediaPlayer<K, T> {
     val fork = ForkedListener<T>(
       mediaPlayers.size,
       {
@@ -125,6 +140,7 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
       { listener(this) })
 
     mediaPlayers.values.forEach { it.setOnCompletionListener(fork::handle) }
+    return this
   }
 
   /** Returns the number of enabled tracks. */

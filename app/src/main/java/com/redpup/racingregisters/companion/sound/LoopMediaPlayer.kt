@@ -45,71 +45,85 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
 
   override fun copy(): LoopMediaPlayer<T> = LoopMediaPlayer(players().first.copy())
 
-  override fun prepareAsync(listener: () -> Unit) {
+  override fun prepareAsync(listener: () -> Unit): LoopMediaPlayer<T> {
     val fork = ForkedListener<Unit>(2, {}, { listener() })
     players().forEach { it.prepareAsync { fork.handle(Unit) } }
+    return this
   }
 
-  override fun start() {
+  override fun start(): LoopMediaPlayer<T> {
     val (current, next) = players()
     attachPlayers(current, next)
     current.start()
+    return this
   }
 
-  override fun pause() {
+  override fun pause(): LoopMediaPlayer<T> {
     players().first.pause()
+    return this
   }
 
-  override fun stop() {
+  override fun stop(): LoopMediaPlayer<T> {
     players().first.stop()
+    return this
   }
 
-  override fun reset() {
+  override fun reset(): LoopMediaPlayer<T> {
     players().first.reset()
+    return this
   }
 
-  override fun release() {
+  override fun release(): LoopMediaPlayer<T> {
     players().forEach { it.release() }
+    return this
   }
 
   override fun isPlaying(): Boolean {
     return players().first.isPlaying()
   }
 
-  override fun seekToStart() {
+  override fun seekToStart(): LoopMediaPlayer<T> {
     players().first.seekToStart()
+    return this
   }
 
   override fun duration(): Int {
     throw UnsupportedOperationException("duration not supported on Looping player. ")
   }
 
-  override fun setIsMuted(isMuted: Boolean) {
+  override fun setIsMuted(isMuted: Boolean): LoopMediaPlayer<T> {
     players().forEach { it.setIsMuted(isMuted) }
+    return this
   }
 
-  override fun setVolume(volume: Float) {
+  override fun setVolume(volume: Float): LoopMediaPlayer<T> {
     players().forEach { it.setVolume(volume) }
+    return this
   }
 
-  override fun multiplyVolume(ratio: Float) {
+  override fun multiplyVolume(ratio: Float): LoopMediaPlayer<T> {
     players().forEach { it.multiplyVolume(ratio) }
+    return this
   }
 
-  override fun setSpeed(speed: Float) {
+  override fun setSpeed(speed: Float): LoopMediaPlayer<T> {
     players().forEach { it.setSpeed(speed) }
+    return this
   }
 
-  override fun multiplySpeed(ratio: Float) {
+  override fun multiplySpeed(ratio: Float): LoopMediaPlayer<T> {
     players().forEach { it.multiplySpeed(ratio) }
+    return this
   }
 
-  override fun setPitch(pitch: Float) {
+  override fun setPitch(pitch: Float): LoopMediaPlayer<T> {
     players().forEach { it.setPitch(pitch) }
+    return this
   }
 
-  override fun multiplyPitch(ratio: Float) {
+  override fun multiplyPitch(ratio: Float): LoopMediaPlayer<T> {
     players().forEach { it.multiplyPitch(ratio) }
+    return this
   }
 
   /** Applies the given function to current player and next player. */
@@ -122,11 +136,11 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
     return fn(players().first)
   }
 
-  override fun setNextMediaPlayer(nextPlayer: LoopMediaPlayer<T>) {
+  override fun setNextMediaPlayer(nextPlayer: LoopMediaPlayer<T>): LoopMediaPlayer<T> {
     throw UnsupportedOperationException("setNextMediaPlayer not supported on already Looping player. ")
   }
 
-  override fun setOnCompletionListener(listener: (LoopMediaPlayer<T>) -> Unit) {
+  override fun setOnCompletionListener(listener: (LoopMediaPlayer<T>) -> Unit): LoopMediaPlayer<T> {
     throw UnsupportedOperationException("setOnCompletionListener not supported on already Looping player. ")
   }
 }
