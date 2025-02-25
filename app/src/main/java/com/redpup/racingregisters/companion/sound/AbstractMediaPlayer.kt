@@ -1,6 +1,5 @@
 package com.redpup.racingregisters.companion.sound
 
-import android.media.MediaPlayer
 import com.google.errorprone.annotations.CanIgnoreReturnValue
 
 /**
@@ -38,6 +37,17 @@ interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
   /** Stops this media player. Returns this. */
   @CanIgnoreReturnValue
   fun stop(): Self
+
+  /**
+   * Soft resets this media player:
+   *  - pauses
+   *  - seeks to start
+   *  - applies playback params.
+   *
+   * Returns this.
+   */
+  @CanIgnoreReturnValue
+  fun softReset() : Self
 
   /** Resets this media player. Returns this. */
   @CanIgnoreReturnValue

@@ -127,6 +127,13 @@ class FakeMediaPlayer(
     return this
   }
 
+  override fun softReset(): FakeMediaPlayer {
+    applyPlaybackParams()
+    pause()
+    seekToStart()
+    return this
+  }
+
   override fun reset(): FakeMediaPlayer {
     cancelAndReset()
     state = State.IDLE

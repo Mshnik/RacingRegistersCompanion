@@ -6,6 +6,7 @@ import com.redpup.racingregisters.companion.sound.AbstractMediaPlayer
 import com.redpup.racingregisters.companion.sound.ForwardingMediaPlayer
 import com.redpup.racingregisters.companion.sound.LoopMediaPlayer
 import com.redpup.racingregisters.companion.sound.MultiTrackMediaPlayer
+import kotlin.math.pow
 
 /**
  * Different tracks in the looped music.
@@ -61,3 +62,6 @@ fun scaleTransitionTimerToMusic(transitionMusic: ForwardingMediaPlayer, state: M
   state.transitionTimer.reset()
   state.transitionTimer.setSpeed(timerIntervalDuration, 1)
 }
+
+/** Returns the pitch ratio of adding the given number of half steps, in equal temperament. */
+fun pitchRatio(halfSteps: Int) = 2.0.pow(halfSteps / 12.0).toFloat()

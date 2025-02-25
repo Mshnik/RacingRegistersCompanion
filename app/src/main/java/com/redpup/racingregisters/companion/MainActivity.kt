@@ -116,8 +116,8 @@ class MainActivity : ComponentActivity() {
 
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
       if (transitionInMusic.isPlaying()) {
-        // transitionInMusic.incrementSpeed()
-        // transitionInMusic.incrementPitch()
+        // transitionInMusic.multiplySpeed(1.05F)
+        // transitionInMusic.multiplyPitch(pitchRatio(2))
         transitionInMusic.pause()
         scaleTransitionTimerToMusic(transitionInMusic, state)
       }
@@ -132,8 +132,8 @@ class MainActivity : ComponentActivity() {
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
       mainMusic.pause()
-      // mainMusic.incrementSpeed()
-      mainMusic.multiplyPitch(2.0.pow(1.0 / 6).toFloat())
+      // mainMusic.multiplySpeed(1.05F)
+      // mainMusic.multiplyPitch(pitchRatio(2))
       breakMusic.setIsMuted(false)
     }
 

@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 private fun create(context: Context, resourceId: Int): MediaPlayer {
   context.resources.openRawResourceFd(resourceId).use { afd ->
-    Log.d("Create", "$resourceId: $afd")
     val mp = MediaPlayer()
     mp.setAudioAttributes(AudioAttributes.Builder().build())
     mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
@@ -48,13 +47,12 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
     return player
   }
 
-  /** Applies fields to [mediaPlayer]'s playback params. */
-  override fun applyPlaybackParams() : ForwardingMediaPlayer {
+  override fun applyPlaybackParams(): ForwardingMediaPlayer {
     mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed).setPitch(pitch)
     return this
   }
 
-  override fun prepareAsync(listener: () -> Unit) : ForwardingMediaPlayer {
+  override fun prepareAsync(listener: () -> Unit): ForwardingMediaPlayer {
     mediaPlayer.setOnPreparedListener {
       isPrepared = true
       listener.invoke()
@@ -64,29 +62,37 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
     return this
   }
 
-  override fun start() : ForwardingMediaPlayer {
+  override fun start(): ForwardingMediaPlayer {
     check(isPrepared) { "Player $id is not prepared" }
     applyPlaybackParams()
     mediaPlayer.start()
     return this
   }
 
-  override fun pause() : ForwardingMediaPlayer {
+  override fun pause(): ForwardingMediaPlayer {
     mediaPlayer.pause()
     return this
   }
 
-  override fun stop() : ForwardingMediaPlayer{
+  override fun stop(): ForwardingMediaPlayer {
     mediaPlayer.stop()
     return this
   }
 
-  override fun reset() : ForwardingMediaPlayer{
+  override fun softReset(): ForwardingMediaPlayer {
+    // TODO: Fix this. It causes a jump ahead in looping for some reason, even when speed is 1.
+    // applyPlaybackParams()
+    pause()
+    seekToStart()
+    return this
+  }
+
+  override fun reset(): ForwardingMediaPlayer {
     mediaPlayer.reset()
     return this
   }
 
-  override fun release() : ForwardingMediaPlayer{
+  override fun release(): ForwardingMediaPlayer {
     mediaPlayer.release()
     return this
   }
@@ -95,7 +101,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
     return mediaPlayer.isPlaying
   }
 
-  override fun seekToStart() : ForwardingMediaPlayer{
+  override fun seekToStart(): ForwardingMediaPlayer {
     mediaPlayer.seekTo(0)
     return this
   }
@@ -104,7 +110,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
     return mediaPlayer.duration
   }
 
-  override fun setIsMuted(isMuted: Boolean) : ForwardingMediaPlayer{
+  override fun setIsMuted(isMuted: Boolean): ForwardingMediaPlayer {
     this.isMuted = isMuted
     if (isMuted) {
       mediaPlayer.setVolume(0.0F, 0.0F)
@@ -114,7 +120,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
     return this
   }
 
-  override fun setVolume(volume: Float) : ForwardingMediaPlayer {
+  override fun setVolume(volume: Float): ForwardingMediaPlayer {
     if (!isMuted) {
       mediaPlayer.setVolume(volume, volume)
     }
@@ -122,39 +128,39 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
     return this
   }
 
-  override fun multiplyVolume(ratio: Float) : ForwardingMediaPlayer{
+  override fun multiplyVolume(ratio: Float): ForwardingMediaPlayer {
     setVolume(volume * ratio)
     return this
   }
 
-  override fun setSpeed(speed: Float) : ForwardingMediaPlayer{
+  override fun setSpeed(speed: Float): ForwardingMediaPlayer {
     this.speed = speed
     return this
   }
 
-  override fun multiplySpeed(ratio: Float) :ForwardingMediaPlayer{
+  override fun multiplySpeed(ratio: Float): ForwardingMediaPlayer {
     setSpeed(speed * ratio)
     return this
   }
 
-  override fun setPitch(pitch: Float) : ForwardingMediaPlayer{
+  override fun setPitch(pitch: Float): ForwardingMediaPlayer {
     this.pitch = pitch
     return this
   }
 
-  override fun multiplyPitch(ratio: Float) : ForwardingMediaPlayer{
+  override fun multiplyPitch(ratio: Float): ForwardingMediaPlayer {
     setPitch(pitch * ratio)
     return this
   }
 
-  override fun setNextMediaPlayer(nextPlayer: ForwardingMediaPlayer) : ForwardingMediaPlayer{
+  override fun setNextMediaPlayer(nextPlayer: ForwardingMediaPlayer): ForwardingMediaPlayer {
     check(isPrepared) { "Player $id is not prepared" }
     check(nextPlayer.isPrepared) { "Player ${nextPlayer.id} is not prepared" }
     mediaPlayer.setNextMediaPlayer(nextPlayer.mediaPlayer)
     return this
   }
 
-  override fun setOnCompletionListener(listener: (ForwardingMediaPlayer) -> Unit) : ForwardingMediaPlayer{
+  override fun setOnCompletionListener(listener: (ForwardingMediaPlayer) -> Unit): ForwardingMediaPlayer {
     mediaPlayer.setOnCompletionListener { listener(this) }
     return this
   }

@@ -55,6 +55,11 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     return this
   }
 
+  override fun softReset(): MultiTrackMediaPlayer<K, T> {
+    mediaPlayers.values.forEach { it.softReset() }
+    return this
+  }
+
   override fun reset(): MultiTrackMediaPlayer<K, T> {
     mediaPlayers.values.forEach { it.reset() }
     return this
@@ -137,10 +142,7 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
   override fun setOnCompletionListener(listener: (MultiTrackMediaPlayer<K, T>) -> Unit): MultiTrackMediaPlayer<K, T> {
     val fork = ForkedListener<T>(
       mediaPlayers.size,
-      {
-        it.reset()
-        it.release()
-      },
+      { it.reset().release() },
       { listener(this) })
 
     mediaPlayers.values.forEach { it.setOnCompletionListener(fork::handle) }

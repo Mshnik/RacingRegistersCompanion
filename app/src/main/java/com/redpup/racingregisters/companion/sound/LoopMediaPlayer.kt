@@ -1,7 +1,10 @@
 package com.redpup.racingregisters.companion.sound
 
+import android.util.Log
 import androidx.annotation.GuardedBy
 import com.redpup.racingregisters.companion.event.ForkedListener
+import java.util.Timer
+import kotlin.concurrent.schedule
 
 /** Applies fn to each value in pair. */
 private fun <T> Pair<T, T>.forEach(fn: (T) -> Unit) {
@@ -29,16 +32,14 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   private fun attachPlayers(current: T, next: T) {
     current.setOnCompletionListener { _ -> onCurrentComplete() }
     current.setNextMediaPlayer(next)
-    next.applyPlaybackParams()
-    next.pause()
-    next.seekToStart()
+    next.softReset()
   }
 
   /** Advances to the next player. */
   @Synchronized
   private fun onCurrentComplete() {
     val next = players.second
-    val following = players.first.copy()
+    val following = players.second.copy()
     players = Pair(next, following)
     following.prepareAsync { attachPlayers(next, following) }
   }
@@ -60,8 +61,8 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
 
   override fun start(): LoopMediaPlayer<T> {
     val (current, next) = players()
-    attachPlayers(current, next)
     current.start()
+    attachPlayers(current, next)
     return this
   }
 
@@ -72,6 +73,11 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
 
   override fun stop(): LoopMediaPlayer<T> {
     players().first.stop()
+    return this
+  }
+
+  override fun softReset(): LoopMediaPlayer<T> {
+    players().first.softReset()
     return this
   }
 
