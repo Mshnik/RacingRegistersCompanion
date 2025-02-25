@@ -82,8 +82,11 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   override fun softReset(): ForwardingMediaPlayer {
     // TODO: Fix this. It causes a jump ahead in looping for some reason, even when speed is 1.
     // applyPlaybackParams()
-    pause()
-    seekToStart()
+    applyPlaybackParams()
+    if (isPlaying()) {
+      pause()
+      seekToStart()
+    }
     return this
   }
 
