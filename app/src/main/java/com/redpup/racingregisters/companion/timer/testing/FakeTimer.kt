@@ -1,22 +1,17 @@
 package com.redpup.racingregisters.companion.timer.testing
 
 /** An event that can be registered within a timer. */
-private data class Event(val tag: String, val time: Long, val fn: () -> Unit)
+internal data class Event(val tag: String, val time: Long, val fn: () -> Unit)
 
 /** A fake System timer for use in testing. */
-class FakeSystemTimer(private var increment: Long = 100L) {
+class FakeSystemTimer() {
   var currentTimeMillis: Long = System.currentTimeMillis()
     set(value) {
       field = value
       handleEvents()
     }
 
-  private var events = mutableListOf<Event>()
-
-  /** Advances [currentTimeMillis] by [increment]. */
-  fun advance() {
-    advance(increment)
-  }
+  internal val events = mutableListOf<Event>()
 
   /** Advances [currentTimeMillis] by [millis]. */
   fun advance(millis: Long) {
@@ -44,6 +39,13 @@ class FakeSystemTimer(private var increment: Long = 100L) {
         }
         elapsed
       }
+    }
+  }
+
+  /** Clears all events. */
+  fun clearEvents() {
+    synchronized(events) {
+      events.clear()
     }
   }
 

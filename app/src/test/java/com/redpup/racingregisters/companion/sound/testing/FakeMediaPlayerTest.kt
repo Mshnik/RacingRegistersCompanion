@@ -211,6 +211,8 @@ class FakeMediaPlayerTest {
     timer.advance(250L)
     player.seekToStart()
 
+    timer.events.size
+
     assertThat(player.state).isEqualTo(State.STARTED)
     assertThat(player.isPlaying()).isTrue()
     assertThat(player.startTime).isEqualTo(timer.currentTimeMillis)
