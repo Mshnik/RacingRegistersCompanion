@@ -116,19 +116,15 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
   }
 
   override fun setOnCompletionListener(listener: (MultiTrackMediaPlayer<K, T>) -> Unit) {
-    var first = true
-    for (player in mediaPlayers.values) {
-      if (first) {
-        // Only set on first listener, to avoid exploding listener invocations when this ends.
-        player.setOnCompletionListener { listener(this) }
-        first = false
-      } else {
-        player.setOnCompletionListener {
-          it.reset()
-          it.release()
-        }
-      }
-    }
+    val fork = ForkedListener<T>(
+      mediaPlayers.size,
+      {
+        it.reset()
+        it.release()
+      },
+      { listener(this) })
+
+    mediaPlayers.values.forEach { it.setOnCompletionListener(fork::handle) }
   }
 
   /** Returns the number of enabled tracks. */
