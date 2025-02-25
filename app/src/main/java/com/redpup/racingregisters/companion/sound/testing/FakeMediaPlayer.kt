@@ -54,7 +54,7 @@ class FakeMediaPlayer(
     return player
   }
 
-  override fun prepareAsync(listener: () -> Unit) {
+  override fun prepareAsync(listener: () -> Unit): FakeMediaPlayer {
     check(state == State.INITIALIZED || state == State.STOPPED)
     state = State.PREPARING
 
@@ -63,15 +63,17 @@ class FakeMediaPlayer(
       listener()
       state = State.PREPARED
     }
+    return this
   }
 
   /** Synchronously prepares this player. */
-  fun prepare() {
+  fun prepare(): FakeMediaPlayer {
     check(state == State.INITIALIZED || state == State.STOPPED)
     state = State.PREPARED
+    return this
   }
 
-  override fun start() {
+  override fun start(): FakeMediaPlayer {
     check(
       state == State.STARTED
         || state == State.PREPARED
@@ -79,7 +81,7 @@ class FakeMediaPlayer(
         || state == State.PLAYBACK_COMPLETED
     )
     if (state == State.STARTED) {
-      return
+      return this
     }
 
     check(playTask == null)
@@ -97,16 +99,18 @@ class FakeMediaPlayer(
     }
     startTime = timer.currentTimeMillis
     playTask = tag
+    return this
   }
 
-  override fun pause() {
+  override fun pause(): FakeMediaPlayer {
     check(state == State.PAUSED || state == State.STARTED)
     state = State.PAUSED
     remainingDurationMillis -= (timer.currentTimeMillis - startTime!!)
     cancel()
+    return this
   }
 
-  override fun stop() {
+  override fun stop(): FakeMediaPlayer {
     check(
       state == State.STOPPED
         || state == State.PREPARED
@@ -116,16 +120,19 @@ class FakeMediaPlayer(
     )
     state = State.STOPPED
     cancelAndReset()
+    return this
   }
 
-  override fun reset() {
+  override fun reset(): FakeMediaPlayer {
     cancelAndReset()
     state = State.IDLE
+    return this
   }
 
-  override fun release() {
+  override fun release(): FakeMediaPlayer {
     cancelAndReset()
     state = State.END
+    return this
   }
 
   /** Cancels this media player from playing. */
@@ -145,7 +152,7 @@ class FakeMediaPlayer(
 
   override fun isPlaying() = state == State.STARTED
 
-  override fun seekToStart() {
+  override fun seekToStart(): FakeMediaPlayer {
     check(
       state == State.PREPARED
         || state == State.STARTED
@@ -158,43 +165,53 @@ class FakeMediaPlayer(
       state = State.PAUSED
       start()
     }
+    return this
   }
 
   override fun duration() = durationMillis.toInt()
 
-  override fun setIsMuted(isMuted: Boolean) {
+  override fun setIsMuted(isMuted: Boolean): FakeMediaPlayer {
     this.isMuted = isMuted
+    return this
   }
 
-  override fun setVolume(volume: Float) {
+  override fun setVolume(volume: Float): FakeMediaPlayer {
     this.volume = volume
+    return this
   }
 
-  override fun multiplyVolume(ratio: Float) {
+  override fun multiplyVolume(ratio: Float): FakeMediaPlayer {
     setVolume(volume * ratio)
+    return this
   }
 
-  override fun setSpeed(speed: Float) {
+  override fun setSpeed(speed: Float): FakeMediaPlayer {
     this.speed = speed
+    return this
   }
 
-  override fun multiplySpeed(ratio: Float) {
+  override fun multiplySpeed(ratio: Float): FakeMediaPlayer {
     setSpeed(speed * ratio)
+    return this
   }
 
-  override fun setPitch(pitch: Float) {
+  override fun setPitch(pitch: Float): FakeMediaPlayer {
     this.pitch = pitch
+    return this
   }
 
-  override fun multiplyPitch(ratio: Float) {
+  override fun multiplyPitch(ratio: Float): FakeMediaPlayer {
     setPitch(pitch * ratio)
+    return this
   }
 
-  override fun setNextMediaPlayer(nextPlayer: FakeMediaPlayer) {
+  override fun setNextMediaPlayer(nextPlayer: FakeMediaPlayer): FakeMediaPlayer {
     this.nextMediaPlayer = nextPlayer
+    return this
   }
 
-  override fun setOnCompletionListener(listener: (FakeMediaPlayer) -> Unit) {
+  override fun setOnCompletionListener(listener: (FakeMediaPlayer) -> Unit): FakeMediaPlayer {
     this.onCompletionListener = listener
+    return this
   }
 }
