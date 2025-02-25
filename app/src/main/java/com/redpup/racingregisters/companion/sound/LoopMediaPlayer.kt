@@ -46,7 +46,7 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   override fun copy(): LoopMediaPlayer<T> = LoopMediaPlayer(players().first.copy())
 
   override fun prepareAsync(listener: () -> Unit) {
-    val fork = ForkedListener<Unit>(2) { listener() }
+    val fork = ForkedListener<Unit>(2, {}, { listener() })
     players().forEach { it.prepareAsync { fork.handle(Unit) } }
   }
 

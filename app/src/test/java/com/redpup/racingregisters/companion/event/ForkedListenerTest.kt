@@ -8,43 +8,66 @@ class ForkedListenerTest {
 
   @Test
   fun noForks() {
-    val output = mutableListOf<Int>()
+    val outputEach = mutableListOf<Int>()
+    val outputMain = mutableListOf<Int>()
 
-    val fork = ForkedListener(1) { output.addAll(it) }
+    ForkedListener(1, { outputEach.add(it) }, { outputMain.addAll(it) })
 
-    assertThat(output).isEmpty()
+    assertThat(outputEach).isEmpty()
+    assertThat(outputMain).isEmpty()
   }
 
   @Test
   fun oneFork() {
-    val output = mutableListOf<Int>()
+    val outputEach = mutableListOf<Int>()
+    val outputMain = mutableListOf<Int>()
 
-    val fork = ForkedListener(1) { output.addAll(it) }
+    val fork = ForkedListener(1, { outputEach.add(it) }, { outputMain.addAll(it) })
     fork.handle(1)
 
-    assertThat(output).containsExactly(1)
+    assertThat(outputEach).containsExactly(1)
+    assertThat(outputMain).containsExactly(1)
   }
 
   @Test
-  fun manyForks() {
-    val output = mutableListOf<Int>()
+  fun manyForks_incomplete() {
+    val outputEach = mutableListOf<Int>()
+    val outputMain = mutableListOf<Int>()
 
-    val fork = ForkedListener(3) { output.addAll(it) }
+    val fork = ForkedListener(3, { outputEach.add(it) }, { outputMain.addAll(it) })
+    fork.handle(1)
+    fork.handle(2)
+
+    assertThat(outputEach).containsExactly(1, 2).inOrder()
+    assertThat(outputMain).isEmpty()
+  }
+
+  @Test
+  fun manyForks_complete() {
+    val outputEach = mutableListOf<Int>()
+    val outputMain = mutableListOf<Int>()
+
+    val fork = ForkedListener(3, { outputEach.add(it) }, { outputMain.addAll(it) })
     fork.handle(1)
     fork.handle(2)
     fork.handle(3)
 
-    assertThat(output).containsExactly(1, 2, 3).inOrder()
+    assertThat(outputEach).containsExactly(1, 2, 3).inOrder()
+    assertThat(outputMain).containsExactly(1, 2, 3).inOrder()
   }
 
   @Test
   fun tooManyForks() {
-    val output = mutableListOf<Int>()
+    val outputEach = mutableListOf<Int>()
+    val outputMain = mutableListOf<Int>()
 
-    val fork = ForkedListener(3) { output.addAll(it) }
+    val fork = ForkedListener(3, { outputEach.add(it) }, { outputMain.addAll(it) })
     fork.handle(1)
     fork.handle(2)
     fork.handle(3)
+
+    assertThat(outputEach).containsExactly(1, 2, 3).inOrder()
+    assertThat(outputMain).containsExactly(1, 2, 3).inOrder()
 
     assertThrows<Exception> { fork.handle(4) }
   }

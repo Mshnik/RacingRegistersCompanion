@@ -28,7 +28,7 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
   }
 
   override fun prepareAsync(listener: () -> Unit) {
-    val fork = ForkedListener<Unit>(mediaPlayers.size) { listener() }
+    val fork = ForkedListener<Unit>(mediaPlayers.size, {}, { listener() })
     mediaPlayers.values.forEach { it.prepareAsync { fork.handle(Unit) } }
   }
 
