@@ -149,6 +149,13 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
     return this
   }
 
+  /** Returns the enabled tracks. */
+  fun tracksEnabled(): Set<K> {
+    synchronized(tracksLock) {
+      return enabledTracks.toSet()
+    }
+  }
+
   /** Returns the number of enabled tracks. */
   fun numTracksEnabled(): Int {
     synchronized(tracksLock) {

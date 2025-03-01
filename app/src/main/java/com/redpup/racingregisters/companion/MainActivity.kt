@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
   private fun setupMusic(context: Context, state: MainActivityState) {
     state.eventHandler.clearSubscribers("setupMusic")
 
-    val mainMusic = backgroundMusic(context)
+    var mainMusic = backgroundMusic(context)
     val breakMusic = backgroundMusic(context)
     val transitionInMusic = transitionMusic(context)
 
@@ -116,7 +116,7 @@ class MainActivity : ComponentActivity() {
 
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
       if (transitionInMusic.isPlaying()) {
-        // transitionInMusic.multiplySpeed(1.05F)
+        transitionInMusic.multiplySpeed(1.15F)
         // transitionInMusic.multiplyPitch(pitchRatio(2))
         transitionInMusic.pause()
         scaleTransitionTimerToMusic(transitionInMusic, state)
@@ -131,10 +131,14 @@ class MainActivity : ComponentActivity() {
       breakMusic.start()
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
-      mainMusic.pause()
-      // mainMusic.multiplySpeed(1.05F)
-      // mainMusic.multiplyPitch(pitchRatio(2))
+      mainMusic.stop()
       breakMusic.setIsMuted(false)
+      mainMusic.reset()
+      mainMusic.release()
+
+      mainMusic = mainMusic.copy()
+      mainMusic.multiplySpeed(1.1F)
+      mainMusic.prepareAsync {}
     }
 
     // TODO: Probably need to prevent main button push before these are complete.

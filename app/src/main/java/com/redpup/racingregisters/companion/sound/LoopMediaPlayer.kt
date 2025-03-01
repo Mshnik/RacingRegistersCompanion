@@ -1,10 +1,7 @@
 package com.redpup.racingregisters.companion.sound
 
-import android.util.Log
 import androidx.annotation.GuardedBy
 import com.redpup.racingregisters.companion.event.ForkedListener
-import java.util.Timer
-import kotlin.concurrent.schedule
 
 /** Applies fn to each value in pair. */
 private fun <T> Pair<T, T>.forEach(fn: (T) -> Unit) {
@@ -32,7 +29,6 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   private fun attachPlayers(current: T, next: T) {
     current.setOnCompletionListener { _ -> onCurrentComplete() }
     current.setNextMediaPlayer(next)
-    next.softReset()
   }
 
   /** Advances to the next player. */
