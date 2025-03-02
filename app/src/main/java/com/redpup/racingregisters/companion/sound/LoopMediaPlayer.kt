@@ -57,6 +57,12 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
     return this
   }
 
+  internal fun attachAndGetCurrent(): T {
+    val (current, next) = players()
+    attachPlayers(current, next)
+    return current
+  }
+
   override fun start(): LoopMediaPlayer<T> {
     val (current, next) = players()
     current.start()

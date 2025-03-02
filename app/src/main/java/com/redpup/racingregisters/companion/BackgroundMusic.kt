@@ -43,6 +43,14 @@ private fun transitionMusic(context: Context) =
     )
   )
 
+/** Attaches this player to other, for seamless transition out of break. */
+private fun ProgressionMediaPlayer<ForwardingMediaPlayer>.setupLeaveTransition(
+  other: ProgressionMediaPlayer<LoopMediaPlayer<ForwardingMediaPlayer>>,
+) {
+  current().setNextMediaPlayer(other.current().attachAndGetCurrent())
+}
+
+
 /** Wrapper on all music that makes up the background music, including breaks and transitions. */
 class BackgroundMusic(context: Context) {
   private val mainMusic = mainMusic(context)
@@ -74,6 +82,7 @@ class BackgroundMusic(context: Context) {
     breakMusic.start()
     mainMusic.advanceAndCap()
     transitionMusic.softReset()
+    transitionMusic.setupLeaveTransition(mainMusic)
   }
 
   /** Begins a transition back to main game music. */
@@ -87,10 +96,12 @@ class BackgroundMusic(context: Context) {
   fun startContinue(state: MainActivityState) {
     if (transitionMusic.isPlaying()) {
       transitionMusic.pause()
-      transitionMusic.advanceAndCap()
-      scaleTransitionTimerToMusic(state)
     }
-    mainMusic.start()
+    transitionMusic.advanceAndCap()
+    scaleTransitionTimerToMusic(state)
+    if (!mainMusic.isPlaying()) {
+      mainMusic.start()
+    }
   }
 
   /** Scales the transition timer in state to match the duration of transitionMusic. */

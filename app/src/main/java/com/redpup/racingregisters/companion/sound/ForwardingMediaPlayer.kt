@@ -50,7 +50,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   }
 
   override fun applyPlaybackParams(): ForwardingMediaPlayer {
-    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed).setPitch(pitch)
+    // mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed).setPitch(pitch)
     return this
   }
 
