@@ -66,21 +66,24 @@ import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
 import com.redpup.racingregisters.companion.ui.theme.sixtyFour
 import kotlin.math.hypot
-import kotlin.math.pow
 
 class MainActivity : ComponentActivity() {
+  private lateinit var state: MainActivityState
+  private lateinit var music: BackgroundMusic
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val timerDuration = baseContext.resources.getInteger(R.integer.timer_duration_seconds)
     val transitionDuration = baseContext.resources.getInteger(R.integer.transition_duration_seconds)
-    val state = MainActivityState(
+    state = MainActivityState(
       Timer(timerDuration),
       Timer(transitionDuration, completeAtIncrements = 1, completionMessage = "GO!")
     )
+    music = BackgroundMusic(baseContext)
 
-    setupMusic(baseContext, state)
-    setupSound(baseContext, state)
+    setupMusic(baseContext)
+    setupSound(baseContext)
 
     val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
 
@@ -94,63 +97,29 @@ class MainActivity : ComponentActivity() {
       }
     }
   }
-
-  private fun setupMusic(context: Context, state: MainActivityState) {
+  
+  private fun setupMusic(context: Context) {
     state.eventHandler.clearSubscribers("setupMusic")
 
-    var mainMusic = backgroundMusic(context)
-    val breakMusic = backgroundMusic(context)
-    val transitionInMusic = transitionMusic(context)
-
-    val masterVolume = context.resources.getFloat(R.dimen.music_volume_master)
-    mainMusic.setVolume(masterVolume)
-    breakMusic.setVolume(masterVolume)
-    breakMusic.enableNextTrack()
-    transitionInMusic.setVolume(masterVolume)
+    music.setVolume(context.resources.getFloat(R.dimen.music_volume_master))
 
     state.eventHandler.subscribe(StateEvent.TRANSITION_TO_CONTINUE, tag = "setupMusic") {
-      breakMusic.pause()
-      transitionInMusic.seekToStart()
-      transitionInMusic.start()
+      music.startTransitionIn()
     }
-
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
-      if (transitionInMusic.isPlaying()) {
-        transitionInMusic.multiplySpeed(1.15F)
-        // transitionInMusic.multiplyPitch(pitchRatio(2))
-        transitionInMusic.pause()
-        scaleTransitionTimerToMusic(transitionInMusic, state)
-      }
-
-      mainMusic.seekToStart()
-      mainMusic.enableNextTrack()
-      mainMusic.start()
-
-      breakMusic.seekToStart()
-      breakMusic.setIsMuted(true)
-      breakMusic.start()
+      music.startContinue(state)
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
-      mainMusic.stop()
-      breakMusic.setIsMuted(false)
-      mainMusic.reset()
-      mainMusic.release()
-
-      mainMusic = mainMusic.copy()
-      mainMusic.multiplySpeed(1.1F)
-      mainMusic.prepareAsync {}
+      music.startBreak()
     }
 
     // TODO: Probably need to prevent main button push before these are complete.
     // But in the short term, fixable by just not pressing it for the first second after
     // opening the app.
-    // Can now use ForkedListener to do this! Yay.
-    mainMusic.prepareAsync {}
-    breakMusic.prepareAsync {}
-    transitionInMusic.prepareAsync { scaleTransitionTimerToMusic(transitionInMusic, state) }
+    music.prepareAsync {}
   }
 
-  private fun setupSound(context: Context, state: MainActivityState) {
+  private fun setupSound(context: Context) {
     state.eventHandler.clearSubscribers("setupSound")
 
     val soundEffectStart = MediaPlayer.create(context, R.raw.effect_start)

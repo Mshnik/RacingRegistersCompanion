@@ -14,6 +14,8 @@ data class MultiTrackMediaPlayer<K, T : AbstractMediaPlayer<T>>(val mediaPlayers
   private val tracksLock = Object()
   private val enabledTracks = mutableSetOf<K>()
 
+  override fun self() = this
+
   override fun numMediaPlayers() = mediaPlayers.values.sumOf { it.numMediaPlayers() }
 
   override fun copy(): MultiTrackMediaPlayer<K, T> {

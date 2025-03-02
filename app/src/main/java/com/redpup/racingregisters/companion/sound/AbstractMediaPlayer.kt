@@ -8,6 +8,9 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue
  */
 interface AbstractMediaPlayer<Self : AbstractMediaPlayer<Self>> {
 
+  /** Returns this. */
+  fun self() : Self
+
   /** How many players are wrapped by this media player. */
   fun numMediaPlayers(): Int
 

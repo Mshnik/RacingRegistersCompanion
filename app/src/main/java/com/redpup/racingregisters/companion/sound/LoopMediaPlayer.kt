@@ -40,6 +40,8 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
     following.prepareAsync { attachPlayers(next, following) }
   }
 
+  override fun self() = this
+
   override fun numMediaPlayers() = 2 * players().first.numMediaPlayers()
 
   override fun copy(): LoopMediaPlayer<T> = LoopMediaPlayer(players().first.copy())

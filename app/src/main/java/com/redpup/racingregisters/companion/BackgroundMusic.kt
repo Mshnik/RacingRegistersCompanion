@@ -2,66 +2,102 @@ package com.redpup.racingregisters.companion
 
 import android.content.Context
 import android.media.MediaPlayer
+import com.redpup.racingregisters.companion.event.ForkedListener
 import com.redpup.racingregisters.companion.sound.AbstractMediaPlayer
 import com.redpup.racingregisters.companion.sound.ForwardingMediaPlayer
 import com.redpup.racingregisters.companion.sound.LoopMediaPlayer
 import com.redpup.racingregisters.companion.sound.MultiTrackMediaPlayer
+import com.redpup.racingregisters.companion.sound.ProgressionMediaPlayer
 import kotlin.math.pow
 
-/**
- * Different tracks in the looped music.
- *
- * Enum order determines order tracks are added to the song.
- */
-enum class Track {
-  DRUMS_1,
-  LEAD,
-  BASS,
-  DRUMS_2,
-  PAD
-}
-
-/** Returns a multi track background of all the tracks. */
-fun backgroundMusic(context: Context) =
-  LoopMediaPlayer(
-    MultiTrackMediaPlayer(
-      mapOf(
-        Track.DRUMS_1 to ForwardingMediaPlayer(context, R.raw.music_drums_1).setVolume(1.0F),
-        Track.DRUMS_2 to ForwardingMediaPlayer(context, R.raw.music_drums_2).setVolume(0.9F),
-        Track.LEAD to ForwardingMediaPlayer(context, R.raw.music_lead).setVolume(1.0F),
-        Track.PAD to ForwardingMediaPlayer(context, R.raw.music_pad).setVolume(0.6F),
-        Track.BASS to ForwardingMediaPlayer(context, R.raw.music_bass).setVolume(0.6F)
-      )
+/** Returns a progression media player of the background music. */
+private fun mainMusic(context: Context) =
+  ProgressionMediaPlayer(
+    listOf(
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_1)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_2)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_3)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_4)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_5)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_6)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_7)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_8)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_9)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_10))
     )
   )
 
-/** Returns a single track transition to use when returning to the game from break. */
-fun transitionMusic(context: Context): ForwardingMediaPlayer {
-  return ForwardingMediaPlayer(context, R.raw.music_continue_transition)
-}
+/** Returns a progression media player of transition out of break music. */
+private fun transitionMusic(context: Context) =
+  ProgressionMediaPlayer(
+    listOf(
+      ForwardingMediaPlayer(context, R.raw.music_background_2t),
+      ForwardingMediaPlayer(context, R.raw.music_background_3t),
+      ForwardingMediaPlayer(context, R.raw.music_background_4t),
+      ForwardingMediaPlayer(context, R.raw.music_background_5t),
+      ForwardingMediaPlayer(context, R.raw.music_background_6t),
+      ForwardingMediaPlayer(context, R.raw.music_background_7t),
+      ForwardingMediaPlayer(context, R.raw.music_background_8t),
+      ForwardingMediaPlayer(context, R.raw.music_background_9t),
+      ForwardingMediaPlayer(context, R.raw.music_background_10t)
+    )
+  )
 
-/** Allows enabling tracks based on enum declaration order. */
-fun MultiTrackMediaPlayer<Track, *>.enableNextTrack() {
-  for (t in Track.entries) {
-    if (!this.isTrackEnabled(t)) {
-      this.setTrackEnabled(t, true)
-      return
+/** Wrapper on all music that makes up the background music, including breaks and transitions. */
+class BackgroundMusic(context: Context) {
+  private val mainMusic = mainMusic(context)
+  private val breakMusic = LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_1))
+  private val transitionMusic = transitionMusic(context)
+
+  private fun all() = listOf(mainMusic, breakMusic, transitionMusic)
+
+  fun prepareAsync(listener: () -> Unit) {
+    val fork = ForkedListener<Unit>(3, {}, { listener() })
+    all().forEach { it.prepareAsync { fork.handle(Unit) } }
+  }
+
+  fun setVolume(volume: Float) {
+    all().forEach { it.setVolume(volume) }
+  }
+
+  /** Exits this music, cleaning up all resources. */
+  fun exit() {
+    all().forEach {
+      it.reset()
+      it.release()
     }
   }
-}
 
-/** Allows enabling tracks based on enum declaration order. */
-fun LoopMediaPlayer<MultiTrackMediaPlayer<Track, ForwardingMediaPlayer>>.enableNextTrack() {
-  this.applyToPlayers { it.enableNextTrack() }
-}
+  /** Starts a break, transitioning to break music. */
+  fun startBreak() {
+    mainMusic.pause()
+    breakMusic.start()
+    mainMusic.advanceAndCap()
+    transitionMusic.softReset()
+  }
 
-/** Scales the transition timer in state to match the duration of transitionMusic. */
-fun scaleTransitionTimerToMusic(transitionMusic: ForwardingMediaPlayer, state: MainActivityState) {
-  val musicDurationMillis = transitionMusic.duration()
-  val timerIntervalDuration = (musicDurationMillis / 4.0).toLong()
-  state.transitionTimer.reset()
-  state.transitionTimer.setSpeed(timerIntervalDuration, 1)
-}
+  /** Begins a transition back to main game music. */
+  fun startTransitionIn() {
+    breakMusic.pause()
+    transitionMusic.start()
+    breakMusic.softReset()
+  }
 
-/** Returns the pitch ratio of adding the given number of half steps, in equal temperament. */
-fun pitchRatio(halfSteps: Int) = 2.0.pow(halfSteps / 12.0).toFloat()
+  /** Continues with main game music. */
+  fun startContinue(state: MainActivityState) {
+    if (transitionMusic.isPlaying()) {
+      transitionMusic.pause()
+      transitionMusic.advanceAndCap()
+      scaleTransitionTimerToMusic(state)
+    }
+    mainMusic.start()
+  }
+
+  /** Scales the transition timer in state to match the duration of transitionMusic. */
+  private fun scaleTransitionTimerToMusic(state: MainActivityState) {
+    val musicDurationMillis = transitionMusic.duration()
+    val timerIntervalDuration = (musicDurationMillis / 4.0).toLong()
+    state.transitionTimer.reset()
+    state.transitionTimer.setSpeed(timerIntervalDuration, 1)
+  }
+}

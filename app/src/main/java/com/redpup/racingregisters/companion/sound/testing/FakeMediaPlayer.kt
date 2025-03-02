@@ -41,6 +41,8 @@ class FakeMediaPlayer(
   var nextMediaPlayer: FakeMediaPlayer? = null; private set
   var onCompletionListener: ((FakeMediaPlayer) -> Unit)? = null; private set
 
+  override fun self() = this
+
   override fun numMediaPlayers() = 1
 
   override fun copy(): FakeMediaPlayer {

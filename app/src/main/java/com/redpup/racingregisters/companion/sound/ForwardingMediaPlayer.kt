@@ -36,6 +36,8 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   private var speed = 1.0F
   private var pitch = 1.0F
 
+  override fun self() = this
+
   override fun numMediaPlayers() = 1
 
   override fun copy(): ForwardingMediaPlayer {
