@@ -3,7 +3,6 @@ package com.redpup.racingregisters.companion.sound
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import android.util.Log
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -33,8 +32,11 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   private var isPrepared = false
   private var isMuted = false
   private var volume = 1.0F
+
+  // Speed and pitch can only be set before applyPlaybackParams.
   private var speed = 1.0F
   private var pitch = 1.0F
+  private var paramsFrozen = false
 
   override fun self() = this
 
@@ -50,7 +52,8 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   }
 
   override fun applyPlaybackParams(): ForwardingMediaPlayer {
-    // mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed).setPitch(pitch)
+    mediaPlayer.playbackParams = mediaPlayer.playbackParams.setSpeed(speed).setPitch(pitch)
+    paramsFrozen = true
     return this
   }
 
@@ -66,7 +69,6 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
 
   override fun start(): ForwardingMediaPlayer {
     check(isPrepared) { "Player $id is not prepared" }
-    applyPlaybackParams()
     mediaPlayer.start()
     return this
   }
@@ -82,9 +84,6 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   }
 
   override fun softReset(): ForwardingMediaPlayer {
-    // TODO: Fix this. It causes a jump ahead in looping for some reason, even when speed is 1.
-    // applyPlaybackParams()
-    applyPlaybackParams()
     if (isPlaying()) {
       pause()
       seekToStart()
@@ -139,6 +138,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   }
 
   override fun setSpeed(speed: Float): ForwardingMediaPlayer {
+    check(!paramsFrozen)
     this.speed = speed
     return this
   }
@@ -149,6 +149,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   }
 
   override fun setPitch(pitch: Float): ForwardingMediaPlayer {
+    check(!paramsFrozen)
     this.pitch = pitch
     return this
   }
