@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity() {
       }
     }
   }
-  
+
   private fun setupMusic(context: Context) {
     state.eventHandler.clearSubscribers("setupMusic")
 
@@ -106,7 +106,10 @@ class MainActivity : ComponentActivity() {
     state.eventHandler.subscribe(StateEvent.TRANSITION_TO_CONTINUE, tag = "setupMusic") {
       music.startTransitionIn()
     }
-    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "setupMusic") {
+    state.eventHandler.subscribe(StateEvent.START, tag = "setupMusic") {
+      music.start(state)
+    }
+    state.eventHandler.subscribe(StateEvent.CONTINUE, tag = "setupMusic") {
       music.startContinue(state)
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {

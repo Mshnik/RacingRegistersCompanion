@@ -74,6 +74,12 @@ class BackgroundMusic(context: Context) {
     }
   }
 
+  /** Starts main game music. */
+  fun start(state: MainActivityState) {
+    scaleTransitionTimerToMusic(state)
+    mainMusic.start()
+  }
+
   /** Starts a break, transitioning to break music. */
   fun startBreak() {
     mainMusic.pause()
@@ -97,9 +103,6 @@ class BackgroundMusic(context: Context) {
     }
     transitionMusic.advanceAndCap()
     scaleTransitionTimerToMusic(state)
-    if (!mainMusic.isPlaying()) {
-      mainMusic.start()
-    }
   }
 
   /** Scales the transition timer in state to match the duration of transitionMusic. */
