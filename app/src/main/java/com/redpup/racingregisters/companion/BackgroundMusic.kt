@@ -27,6 +27,9 @@ private fun mainMusic(context: Context) =
     )
   )
 
+private fun breakMusic(context: Context) =
+  LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_1))
+
 /** Returns a progression media player of transition out of break music. */
 private fun transitionMusic(context: Context) =
   ProgressionMediaPlayer(
@@ -51,24 +54,24 @@ private fun ProgressionMediaPlayer<ForwardingMediaPlayer>.setupLeaveTransition(
 }
 
 /** Wrapper on all music that makes up the background music, including breaks and transitions. */
-class BackgroundMusic(context: Context) {
+class BackgroundMusic(private val context: Context) {
   private val mainMusic = mainMusic(context)
-  private val breakMusic = LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_1))
+  private val breakMusic = breakMusic(context)
   private val transitionMusic = transitionMusic(context)
-  private val all = listOf(mainMusic, breakMusic, transitionMusic)
+  private fun all() = listOf(mainMusic, breakMusic, transitionMusic)
 
   fun prepareAsync(listener: () -> Unit) {
     val fork = ForkedListener<Unit>(3, {}, { listener() })
-    all.forEach { it.prepareAsync { fork.handle(Unit) } }
+    all().forEach { it.prepareAsync { fork.handle(Unit) } }
   }
 
   fun setVolume(volume: Float) {
-    all.forEach { it.setVolume(volume) }
+    all().forEach { it.setVolume(volume) }
   }
 
   /** Exits this music, cleaning up all resources. */
   fun exit() {
-    all.forEach {
+    all().forEach {
       it.reset()
       it.release()
     }
