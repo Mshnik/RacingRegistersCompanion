@@ -94,11 +94,13 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   }
 
   override fun reset(): ForwardingMediaPlayer {
+    Log.d("ForwardingMediaPlayer", "$id reset")
     mediaPlayer.reset()
     return this
   }
 
   override fun release(): ForwardingMediaPlayer {
+    Log.d("ForwardingMediaPlayer", "$id released")
     mediaPlayer.release()
     return this
   }

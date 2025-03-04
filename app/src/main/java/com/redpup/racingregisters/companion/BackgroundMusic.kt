@@ -86,7 +86,7 @@ class BackgroundMusic(context: Context) {
 
   /** Starts a break, transitioning to break music. */
   fun startBreak() {
-    mainMusic.pause()
+    mainMusic.softReset()
     breakMusic.start()
     mainMusic.advanceAndCap()
     transitionMusic.softReset()
@@ -107,6 +107,14 @@ class BackgroundMusic(context: Context) {
     }
     transitionMusic.advanceAndCap()
     scaleTransitionTimerToMusic(state)
+  }
+
+  /** Resets the game music back to the initial state. */
+  fun reset(state: MainActivityState) {
+    mainMusic.softReset()
+    breakMusic.softReset()
+    transitionMusic.softReset()
+    state.transitionTimer.setSpeed(1000L, 1)
   }
 
   /** Scales the transition timer in state to match the duration of transitionMusic. */

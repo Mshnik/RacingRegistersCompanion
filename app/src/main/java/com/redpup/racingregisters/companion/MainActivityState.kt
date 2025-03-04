@@ -84,6 +84,7 @@ class MainActivityState(val timer: Timer, val transitionTimer: Timer, val music:
   fun reset() {
     timer.reset()
     transitionTimer.reset()
+    music.reset(this)
     eventHandler.handleSubscribers(Event.RESET)
   }
 

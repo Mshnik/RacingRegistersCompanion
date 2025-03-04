@@ -70,7 +70,6 @@ import kotlin.math.hypot
 
 class MainActivity : ComponentActivity() {
   private lateinit var state: MainActivityState
-  private lateinit var music: BackgroundMusic
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

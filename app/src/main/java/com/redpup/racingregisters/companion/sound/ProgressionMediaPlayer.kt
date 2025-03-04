@@ -65,17 +65,20 @@ class ProgressionMediaPlayer<T : AbstractMediaPlayer<T>>(private val progression
   }
 
   override fun softReset(): ProgressionMediaPlayer<T> {
-    current().softReset()
+    progression.forEach { it.softReset() }
+    currentIndex = 0
     return this
   }
 
   override fun reset(): ProgressionMediaPlayer<T> {
     progression.forEach { it.reset() }
+    currentIndex = 0
     return this
   }
 
   override fun release(): ProgressionMediaPlayer<T> {
     progression.forEach { it.release() }
+    currentIndex = 0
     return this
   }
 
