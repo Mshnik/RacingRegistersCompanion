@@ -34,10 +34,12 @@ class LoopMediaPlayer<T : AbstractMediaPlayer<T>>(mediaPlayer: T) :
   /** Advances to the next player. */
   @Synchronized
   private fun onCurrentComplete() {
-    val next = players.second
+    val (current, next) = players
     val following = players.second.copy()
     players = Pair(next, following)
     following.prepareAsync { attachPlayers(next, following) }
+    current.reset()
+    current.release()
   }
 
   override fun self() = this

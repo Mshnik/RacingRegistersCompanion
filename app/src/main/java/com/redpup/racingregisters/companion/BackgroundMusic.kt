@@ -86,10 +86,10 @@ class BackgroundMusic(context: Context) {
 
   /** Starts a break, transitioning to break music. */
   fun startBreak() {
-    mainMusic.softReset()
+    mainMusic.current().softReset()
     breakMusic.start()
     mainMusic.advanceAndCap()
-    transitionMusic.softReset()
+    transitionMusic.current().softReset()
     transitionMusic.setupLeaveTransition(mainMusic)
   }
 
