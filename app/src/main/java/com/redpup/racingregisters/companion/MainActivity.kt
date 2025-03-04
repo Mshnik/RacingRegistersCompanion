@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
@@ -78,12 +79,9 @@ class MainActivity : ComponentActivity() {
     val transitionDuration = baseContext.resources.getInteger(R.integer.transition_duration_seconds)
     state = MainActivityState(
       Timer(timerDuration),
-      Timer(transitionDuration, completeAtIncrements = 1, completionMessage = "GO!")
+      Timer(transitionDuration, completeAtIncrements = 1, completionMessage = "GO!"),
+      BackgroundMusic(baseContext)
     )
-    music = BackgroundMusic(baseContext)
-
-    setupMusic(baseContext)
-    setupSound(baseContext)
 
     val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
 
@@ -96,44 +94,9 @@ class MainActivity : ComponentActivity() {
         }
       }
     }
-  }
 
-  private fun setupMusic(context: Context) {
-    state.eventHandler.clearSubscribers("setupMusic")
-
-    music.setVolume(context.resources.getFloat(R.dimen.music_volume_master))
-
-    state.eventHandler.subscribe(StateEvent.TRANSITION_TO_CONTINUE, tag = "setupMusic") {
-      music.startTransitionIn()
-    }
-    state.eventHandler.subscribe(StateEvent.START, tag = "setupMusic") {
-      music.start(state)
-    }
-    state.eventHandler.subscribe(StateEvent.CONTINUE, tag = "setupMusic") {
-      music.startContinue(state)
-    }
-    state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupMusic") {
-      music.startBreak()
-    }
-
-    // TODO: Probably need to prevent main button push before these are complete.
-    // But in the short term, fixable by just not pressing it for the first second after
-    // opening the app.
-    music.prepareAsync {}
-  }
-
-  private fun setupSound(context: Context) {
-    state.eventHandler.clearSubscribers("setupSound")
-
-    val soundEffectStart = MediaPlayer.create(context, R.raw.effect_start)
-    val soundEffectBreak = MediaPlayer.create(context, R.raw.effect_break)
-
-    state.transitionTimer.eventHandler.subscribe(TimerEvent.COMPLETE, tag = "setupSound") {
-      soundEffectStart.start()
-    }
-    state.eventHandler.subscribe(StateEvent.BREAK, tag = "setupSound") {
-      soundEffectBreak.start()
-    }
+    state.setupMusic(baseContext)
+    state.setupSound(baseContext)
   }
 }
 
@@ -310,10 +273,19 @@ fun RenderBreakContinueButton(
   modifier: Modifier = Modifier,
   initialState: MainButtonState = MainButtonState.START,
 ) {
+  state.eventHandler.clearSubscribers("RenderBreakContinueButton")
+
   var buttonState by remember { mutableStateOf(initialState) }
   var textColor by remember { mutableStateOf(Color.Black) }
   var backgroundColor by remember { mutableStateOf(Color.Black) }
   var borderColor by remember { mutableStateOf(Color.Black) }
+
+  var buttonReady by remember { mutableStateOf(false) }
+  state.eventHandler.subscribe(
+    StateEvent.MUSIC_PREPARED,
+    tag = "RenderBreakContinueButton"
+  ) { buttonReady = true }
+
   var buttonEnabled by remember { mutableStateOf(true) }
 
   fun updateColors() {
@@ -324,7 +296,6 @@ fun RenderBreakContinueButton(
   }
   updateColors()
 
-  state.eventHandler.clearSubscribers("RenderBreakContinueButton")
   state.eventHandler.subscribe(
     StateEvent.TRANSITION_TO_START,
     StateEvent.TRANSITION_TO_CONTINUE,
@@ -367,95 +338,17 @@ fun RenderBreakContinueButton(
   ) {
     Button(
       onClick = { state.action(buttonState) },
-      enabled = buttonEnabled,
+      enabled = buttonReady && buttonEnabled,
       border = BorderStroke(
         width = borderThickness, color = borderColor
       ),
-      colors = ButtonColors(backgroundColor, textColor, backgroundColor, textColor),
+      colors = ButtonColors(backgroundColor, textColor, Grey90, textColor),
       shape = RoundedCornerShape(borderThickness),
       modifier = modifier.padding(borderThickness)
     ) {
       Text(
         buttonState.name, style = buttonFont, modifier = modifier.padding(0.dp, 15.dp)
       )
-    }
-  }
-}
-
-@Preview(
-  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
-)
-@Composable
-fun PreviewRenderTopBar() {
-  val state = MainActivityState(Timer(900), Timer(3))
-  RacingRegistersCompanionTheme {
-    Surface {
-      RenderTopBar(state)
-    }
-  }
-}
-
-@Preview(
-  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
-)
-@Composable
-fun PreviewRenderedTimer() {
-  val state = MainActivityState(Timer(900), Timer(3))
-  RacingRegistersCompanionTheme {
-    Surface {
-      RenderTimer(state = state)
-    }
-  }
-}
-
-@Preview(
-  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
-)
-@Composable
-fun PreviewRenderedStartButton() {
-  val state = MainActivityState(Timer(900), Timer(3))
-  RacingRegistersCompanionTheme {
-    Surface {
-      RenderBreakContinueButton(state = state, Modifier, MainButtonState.START)
-    }
-  }
-}
-
-@Preview(
-  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
-)
-@Composable
-fun PreviewRenderedContinueButton() {
-  val state = MainActivityState(Timer(900), Timer(3))
-  RacingRegistersCompanionTheme {
-    Surface {
-      RenderBreakContinueButton(state = state, Modifier, MainButtonState.CONTINUE)
-    }
-  }
-}
-
-@Preview(
-  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
-)
-@Composable
-fun PreviewRenderedBreakButton() {
-  val state = MainActivityState(Timer(900), Timer(3))
-  RacingRegistersCompanionTheme {
-    Surface {
-      RenderBreakContinueButton(state = state, Modifier, MainButtonState.BREAK)
-    }
-  }
-}
-
-@Preview(
-  uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
-)
-@Composable
-fun PreviewRenderBackground() {
-  val state = MainActivityState(Timer(900), Timer(3))
-  RacingRegistersCompanionTheme {
-    Surface {
-      RenderBackground(state, 20)
     }
   }
 }

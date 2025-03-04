@@ -3,6 +3,7 @@ package com.redpup.racingregisters.companion.sound
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.util.Log
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -60,6 +61,7 @@ class ForwardingMediaPlayer(private val context: Context, private val resourceId
   override fun prepareAsync(listener: () -> Unit): ForwardingMediaPlayer {
     mediaPlayer.setOnPreparedListener {
       isPrepared = true
+      Log.d("ForwardingMediaPlayer", "$id prepared")
       listener.invoke()
     }
     applyPlaybackParams()

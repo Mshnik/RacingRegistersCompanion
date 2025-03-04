@@ -1,5 +1,7 @@
 package com.redpup.racingregisters.companion
 
+import android.content.Context
+import android.media.MediaPlayer
 import com.redpup.racingregisters.companion.event.EventHandler
 import com.redpup.racingregisters.companion.timer.Timer
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
@@ -22,6 +24,7 @@ enum class MainButtonState {
 
 /** Events that can be fired on the main activity state. */
 enum class Event {
+  MUSIC_PREPARED,
   TRANSITION_TO_START,
   START,
   BREAK,
@@ -31,7 +34,7 @@ enum class Event {
 }
 
 /** Wrapper on mutable state visually displayed in this activity.*/
-class MainActivityState(val timer: Timer, val transitionTimer: Timer) {
+class MainActivityState(val timer: Timer, val transitionTimer: Timer, val music: BackgroundMusic) {
   val eventHandler = EventHandler<Event>()
 
   /** Invoked when the button is pushed. */
@@ -55,7 +58,7 @@ class MainActivityState(val timer: Timer, val transitionTimer: Timer) {
   private fun transition(execute: () -> Unit) {
     transitionTimer.reset()
     transitionTimer.eventHandler.clearSubscribers("Transition")
-    transitionTimer.eventHandler.subscribe(TimerEvent.FINISH, tag="Transition") { execute() }
+    transitionTimer.eventHandler.subscribe(TimerEvent.FINISH, tag = "Transition") { execute() }
     transitionTimer.start()
   }
 
@@ -82,6 +85,43 @@ class MainActivityState(val timer: Timer, val transitionTimer: Timer) {
     timer.reset()
     transitionTimer.reset()
     eventHandler.handleSubscribers(Event.RESET)
+  }
+
+  /** Sets up music with event handling. */
+  fun setupMusic(context: Context) {
+    eventHandler.clearSubscribers("setupMusic")
+
+    music.setVolume(context.resources.getFloat(R.dimen.music_volume_master))
+
+    eventHandler.subscribe(Event.TRANSITION_TO_CONTINUE, tag = "setupMusic") {
+      music.startTransitionIn()
+    }
+    eventHandler.subscribe(Event.START, tag = "setupMusic") {
+      music.start(this)
+    }
+    eventHandler.subscribe(Event.CONTINUE, tag = "setupMusic") {
+      music.startContinue(this)
+    }
+    eventHandler.subscribe(Event.BREAK, tag = "setupMusic") {
+      music.startBreak()
+    }
+
+    music.prepareAsync { eventHandler.handleSubscribers(Event.MUSIC_PREPARED) }
+  }
+
+  /** Sets up sound with event handling. */
+  fun setupSound(context: Context) {
+    eventHandler.clearSubscribers("setupSound")
+
+    val soundEffectStart = MediaPlayer.create(context, R.raw.effect_start)
+    val soundEffectBreak = MediaPlayer.create(context, R.raw.effect_break)
+
+    transitionTimer.eventHandler.subscribe(TimerEvent.COMPLETE, tag = "setupSound") {
+      soundEffectStart.start()
+    }
+    eventHandler.subscribe(Event.BREAK, tag = "setupSound") {
+      soundEffectBreak.start()
+    }
   }
 }
 

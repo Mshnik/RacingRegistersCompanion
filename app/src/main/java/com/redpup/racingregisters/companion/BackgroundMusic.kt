@@ -54,15 +54,16 @@ private fun ProgressionMediaPlayer<ForwardingMediaPlayer>.setupLeaveTransition(
 }
 
 /** Wrapper on all music that makes up the background music, including breaks and transitions. */
-class BackgroundMusic(private val context: Context) {
+class BackgroundMusic(context: Context) {
   private val mainMusic = mainMusic(context)
   private val breakMusic = breakMusic(context)
   private val transitionMusic = transitionMusic(context)
   private fun all() = listOf(mainMusic, breakMusic, transitionMusic)
 
   fun prepareAsync(listener: () -> Unit) {
-    val fork = ForkedListener<Unit>(3, {}, { listener() })
-    all().forEach { it.prepareAsync { fork.handle(Unit) } }
+    val all = all()
+    val fork = ForkedListener<Unit>(all.size, {}, { listener()  })
+    all.forEach { it.prepareAsync { fork.handle(Unit) } }
   }
 
   fun setVolume(volume: Float) {
