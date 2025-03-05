@@ -16,3 +16,4 @@ val Grey90 = Color(0xFF2A2A2A)
 val Green90 = Color(0xFF7FFD77)
 
 val Red90 = Color(0xFFFD7777)
+val DarkRed90 = Color(0xFF650000)

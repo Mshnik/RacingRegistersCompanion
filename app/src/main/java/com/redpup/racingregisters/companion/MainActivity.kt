@@ -57,6 +57,7 @@ import com.redpup.racingregisters.companion.Event
 import com.redpup.racingregisters.companion.Event as StateEvent
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.Timer
+import com.redpup.racingregisters.companion.ui.theme.DarkRed90
 import com.redpup.racingregisters.companion.ui.theme.Green90
 import com.redpup.racingregisters.companion.ui.theme.Grey50
 import com.redpup.racingregisters.companion.ui.theme.Grey90
@@ -157,14 +158,19 @@ fun RenderScreen(state: MainActivityState, modifier: Modifier) {
 
 @Composable
 fun RenderBackground(state: MainActivityState, numBars: Int) {
+  val hurryUpSeconds = LocalContext.current.resources.getInteger(R.integer.timer_hurry_up_seconds)
+
   val numBarsTimes2 = numBars * 2
+  var hurryUpBarColor by remember { mutableStateOf(Grey90) }
   var shift by remember { mutableFloatStateOf(0.0F) }
   var shiftFactor by remember { mutableFloatStateOf(0.0F) }
   var previousShift by remember { mutableFloatStateOf(0.0F) }
   var previousTotal by remember { mutableFloatStateOf(0.0F) }
 
   state.timer.eventHandler.clearSubscribers("RenderBackground")
+  state.timer.incrementHandler.clearSubscribers("RenderBackground")
   state.eventHandler.clearSubscribers("RenderBackground")
+
   state.timer.eventHandler.subscribe(TimerEvent.TICK, tag = "RenderBackground") {
     shift = state.timer.elapsedMilliIncrements() / 1000F
   }
@@ -180,6 +186,9 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
     shiftFactor = 0.0F
     previousShift = 0.0F
   }
+  state.timer.incrementHandler.subscribe(hurryUpSeconds, tag = "RenderBackground") {
+    hurryUpBarColor = DarkRed90
+  }
 
   Canvas(modifier = Modifier.fillMaxSize()) {
     val w = size.width
@@ -194,7 +203,7 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
         val xOffset =
           ((i * 2 + xShift) % numBarsTimes2) * barWidth - threeQuartersW
         drawRect(
-          color = Grey90,
+          color = if (i % 2 == 0) hurryUpBarColor else Grey90,
           topLeft = Offset(x = xOffset, y = -halfW),
           size = Size(barWidth, h + w)
         )
