@@ -80,7 +80,7 @@ class BackgroundMusic(context: Context) {
 
   /** Starts main game music. */
   fun start(state: MainActivityState) {
-    scaleTransitionTimerToMusic(state)
+    state.scaleTransitionTimerToMusic(transitionMusic.duration())
     mainMusic.start()
   }
 
@@ -106,7 +106,7 @@ class BackgroundMusic(context: Context) {
       transitionMusic.pause()
     }
     transitionMusic.advanceAndCap()
-    scaleTransitionTimerToMusic(state)
+    state.scaleTransitionTimerToMusic(transitionMusic.duration())
   }
 
   /** Resets the game music back to the initial state. */
@@ -115,13 +115,5 @@ class BackgroundMusic(context: Context) {
     breakMusic.softReset()
     transitionMusic.softReset()
     state.transitionTimer.setSpeed(1000L, 1)
-  }
-
-  /** Scales the transition timer in state to match the duration of transitionMusic. */
-  private fun scaleTransitionTimerToMusic(state: MainActivityState) {
-    val musicDurationMillis = transitionMusic.duration()
-    val timerIntervalDuration = (musicDurationMillis / 4.0).toLong()
-    state.transitionTimer.reset()
-    state.transitionTimer.setSpeed(timerIntervalDuration, 1)
   }
 }

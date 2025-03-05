@@ -30,7 +30,7 @@ enum class Event {
   BREAK,
   TRANSITION_TO_CONTINUE,
   CONTINUE,
-  RESET
+  RESET,
 }
 
 /** Wrapper on mutable state visually displayed in this activity.*/
@@ -106,6 +106,9 @@ class MainActivityState(val timer: Timer, val transitionTimer: Timer, val music:
     eventHandler.subscribe(Event.BREAK, tag = "setupMusic") {
       music.startBreak()
     }
+    timer.eventHandler.subscribe(TimerEvent.FINISH, tag = "setupMusic") {
+      music.reset(this)
+    }
 
     music.prepareAsync { eventHandler.handleSubscribers(Event.MUSIC_PREPARED) }
   }
@@ -114,17 +117,27 @@ class MainActivityState(val timer: Timer, val transitionTimer: Timer, val music:
   fun setupSound(context: Context) {
     eventHandler.clearSubscribers("setupSound")
 
-    val startEffect = MediaPlayer.create(context, R.raw.effect_start)
+    val beginEffect = MediaPlayer.create(context, R.raw.effect_begin)
+    val resumeEffect = MediaPlayer.create(context, R.raw.effect_start)
     val breakEffect = MediaPlayer.create(context, R.raw.effect_break)
 
+    scaleTransitionTimerToMusic(beginEffect.duration)
+    eventHandler.subscribe(Event.RESET, tag = "setupSound") {
+      scaleTransitionTimerToMusic(beginEffect.duration)
+    }
+
+    eventHandler.subscribe(Event.TRANSITION_TO_START, tag = "setupSound") {
+      beginEffect.start()
+    }
     transitionTimer.eventHandler.subscribe(TimerEvent.COMPLETE, tag = "setupSound") {
-      startEffect.start()
+      resumeEffect.start()
     }
     eventHandler.subscribe(Event.BREAK, tag = "setupSound") {
       breakEffect.start()
     }
 
     val countdownEffects = mapOf(
+      0 to R.raw.effect_finish,
       1 to R.raw.effect_countdown_1,
       2 to R.raw.effect_countdown_2,
       3 to R.raw.effect_countdown_3,
@@ -138,6 +151,17 @@ class MainActivityState(val timer: Timer, val transitionTimer: Timer, val music:
     ).mapValues { MediaPlayer.create(context, it.value) }
 
     countdownEffects.forEach { timer.incrementHandler.subscribe(it.key) { it.value.start() } }
+  }
+
+  /**
+   * Scales the transition timer in state to match the given duration in millis,
+   * without changing the number of increments in the timer.
+   */
+  fun scaleTransitionTimerToMusic(durationMillis: Int) {
+    transitionTimer.reset()
+    val timerIntervalDuration =
+      (durationMillis / transitionTimer.remainingIncrements().toFloat()).toLong()
+    transitionTimer.setSpeed(timerIntervalDuration, 1)
   }
 }
 
