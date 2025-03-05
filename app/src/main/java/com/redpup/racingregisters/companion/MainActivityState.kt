@@ -114,15 +114,30 @@ class MainActivityState(val timer: Timer, val transitionTimer: Timer, val music:
   fun setupSound(context: Context) {
     eventHandler.clearSubscribers("setupSound")
 
-    val soundEffectStart = MediaPlayer.create(context, R.raw.effect_start)
-    val soundEffectBreak = MediaPlayer.create(context, R.raw.effect_break)
+    val startEffect = MediaPlayer.create(context, R.raw.effect_start)
+    val breakEffect = MediaPlayer.create(context, R.raw.effect_break)
 
     transitionTimer.eventHandler.subscribe(TimerEvent.COMPLETE, tag = "setupSound") {
-      soundEffectStart.start()
+      startEffect.start()
     }
     eventHandler.subscribe(Event.BREAK, tag = "setupSound") {
-      soundEffectBreak.start()
+      breakEffect.start()
     }
+
+    val countdownEffects = mapOf(
+      1 to R.raw.effect_countdown_1,
+      2 to R.raw.effect_countdown_2,
+      3 to R.raw.effect_countdown_3,
+      4 to R.raw.effect_countdown_4,
+      5 to R.raw.effect_countdown_5,
+      6 to R.raw.effect_countdown_6,
+      7 to R.raw.effect_countdown_7,
+      8 to R.raw.effect_countdown_8,
+      9 to R.raw.effect_countdown_9,
+      10 to R.raw.effect_countdown_10
+    ).mapValues { MediaPlayer.create(context, it.value) }
+
+    countdownEffects.forEach { timer.incrementHandler.subscribe(it.key) { it.value.start() } }
   }
 }
 
