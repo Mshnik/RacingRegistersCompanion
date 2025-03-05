@@ -48,6 +48,7 @@ class Timer(
   var timer: JavaTimer? = null; private set
 
   val eventHandler = EventHandler<Event>()
+  val incrementHandler = EventHandler<Int>()
 
   /** The amount of milli-Increments that have passed. */
   fun elapsedMilliIncrements(): Long {
@@ -146,6 +147,7 @@ class Timer(
       eventHandler.handleSubscribers(Event.SECOND)
 
       val remainingIncrements = remainingIncrements()
+      incrementHandler.handleSubscribers(remainingIncrements)
       if (remainingIncrements == completeAtIncrements) {
         eventHandler.handleSubscribers(Event.COMPLETE)
       }

@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.redpup.racingregisters.companion.Event
 import com.redpup.racingregisters.companion.Event as StateEvent
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.Timer
@@ -59,6 +61,7 @@ import com.redpup.racingregisters.companion.ui.theme.Green90
 import com.redpup.racingregisters.companion.ui.theme.Grey50
 import com.redpup.racingregisters.companion.ui.theme.Grey90
 import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionTheme
+import com.redpup.racingregisters.companion.ui.theme.Red90
 import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
 import com.redpup.racingregisters.companion.ui.theme.sixtyFour
@@ -203,6 +206,8 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun RenderTimer(state: MainActivityState) {
+  val hurryUpSeconds = LocalContext.current.resources.getInteger(R.integer.timer_hurry_up_seconds)
+
   Row(
     verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -210,8 +215,10 @@ fun RenderTimer(state: MainActivityState) {
     var timeColor by remember { mutableStateOf(Grey50) }
 
     state.timer.eventHandler.clearSubscribers("RenderTimer")
+    state.timer.incrementHandler.clearSubscribers("RenderTimer")
     state.transitionTimer.eventHandler.clearSubscribers("RenderTimer")
     state.eventHandler.clearSubscribers("RenderTimer")
+
     state.timer.eventHandler.subscribe(TimerEvent.SECOND, tag = "RenderTimer") {
       renderedTime = state.timer.toString()
     }
@@ -221,15 +228,18 @@ fun RenderTimer(state: MainActivityState) {
     state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderTimer") {
       renderedTime = state.timer.toString()
     }
+    state.timer.incrementHandler.subscribe(hurryUpSeconds) {
+      timeColor = Red90
+    }
     state.eventHandler.subscribe(
       StateEvent.TRANSITION_TO_START,
       StateEvent.TRANSITION_TO_CONTINUE, tag = "RenderTimer"
     ) {
-      timeColor = Green90
+      timeColor = if (state.timer.remainingIncrements() <= hurryUpSeconds) Red90 else Green90
       renderedTime = state.transitionTimer.toString()
     }
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "RenderTimer") {
-      timeColor = White90
+      timeColor = if (state.timer.remainingIncrements() <= hurryUpSeconds) Red90 else White90
       renderedTime = state.timer.toString()
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "RenderTimer") {
