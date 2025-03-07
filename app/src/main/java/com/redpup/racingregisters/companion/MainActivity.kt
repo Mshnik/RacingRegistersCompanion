@@ -185,6 +185,7 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
     shift = 0.0F
     shiftFactor = 0.0F
     previousShift = 0.0F
+    hurryUpBarColor = Grey90
   }
   state.timer.incrementHandler.subscribe(hurryUpSeconds, tag = "RenderBackground") {
     hurryUpBarColor = DarkRed90
