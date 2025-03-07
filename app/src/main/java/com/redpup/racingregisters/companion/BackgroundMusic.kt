@@ -56,9 +56,14 @@ private fun ProgressionMediaPlayer<ForwardingMediaPlayer>.setupLeaveTransition(
 /** Wrapper on all music that makes up the background music, including breaks and transitions. */
 class BackgroundMusic(context: Context) {
   private val mainMusic = mainMusic(context)
+  private val hurryUpMusic = mainMusic(context)
+    // 5% faster
+    .setSpeed(1.05F)
+    // Half a step higher (2^1/12).
+    .setPitch(2.0.pow(1.0 / 12.0).toFloat())
   private val breakMusic = breakMusic(context)
   private val transitionMusic = transitionMusic(context)
-  private fun all() = listOf(mainMusic, breakMusic, transitionMusic)
+  private fun all() = listOf(mainMusic, hurryUpMusic, breakMusic, transitionMusic)
 
   fun prepareAsync(listener: () -> Unit) {
     val all = all()
@@ -85,12 +90,18 @@ class BackgroundMusic(context: Context) {
   }
 
   /** Starts a break, transitioning to break music. */
-  fun startBreak() {
+  fun startBreak(state : MainActivityState) {
     mainMusic.current().softReset()
+    hurryUpMusic.current().softReset()
     breakMusic.start()
     mainMusic.advanceAndCap()
+    hurryUpMusic.advanceAndCap()
     transitionMusic.current().softReset()
-    transitionMusic.setupLeaveTransition(mainMusic)
+    if (state.isHurryUp()) {
+      transitionMusic.setupLeaveTransition(hurryUpMusic)
+    } else {
+      transitionMusic.setupLeaveTransition(mainMusic)
+    }
   }
 
   /** Begins a transition back to main game music. */
@@ -109,9 +120,16 @@ class BackgroundMusic(context: Context) {
     state.scaleTransitionTimerToMusic(transitionMusic.duration())
   }
 
-  /** Resets the game music back to the initial state. */
+  /** Starts the hurry up music. */
+  fun startHurryUp() {
+    mainMusic.current().softReset()
+    hurryUpMusic.start()
+  }
+
+  /** Resets the game music back to th  e initial state. */
   fun reset(state: MainActivityState) {
     mainMusic.softReset()
+    hurryUpMusic.softReset()
     breakMusic.softReset()
     transitionMusic.softReset()
     state.transitionTimer.setSpeed(1000L, 1)

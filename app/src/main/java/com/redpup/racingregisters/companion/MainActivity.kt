@@ -76,9 +76,11 @@ class MainActivity : ComponentActivity() {
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
     val timerDuration = baseContext.resources.getInteger(R.integer.timer_duration_seconds)
+    val hurryUpTime = baseContext.resources.getInteger(R.integer.timer_hurry_up_seconds)
     val transitionDuration = baseContext.resources.getInteger(R.integer.transition_duration_seconds)
     state = MainActivityState(
       Timer(timerDuration),
+      hurryUpTime,
       Timer(transitionDuration, completeAtIncrements = 1, completionMessage = "GO!"),
       BackgroundMusic(baseContext)
     )
@@ -158,8 +160,6 @@ fun RenderScreen(state: MainActivityState, modifier: Modifier) {
 
 @Composable
 fun RenderBackground(state: MainActivityState, numBars: Int) {
-  val hurryUpSeconds = LocalContext.current.resources.getInteger(R.integer.timer_hurry_up_seconds)
-
   val numBarsTimes2 = numBars * 2
   var hurryUpBarColor by remember { mutableStateOf(Grey90) }
   var shift by remember { mutableFloatStateOf(0.0F) }
@@ -187,7 +187,7 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
     previousShift = 0.0F
     hurryUpBarColor = Grey90
   }
-  state.timer.incrementHandler.subscribe(hurryUpSeconds, tag = "RenderBackground") {
+  state.eventHandler.subscribe(StateEvent.HURRY_UP, tag = "RenderBackground") {
     hurryUpBarColor = DarkRed90
   }
 

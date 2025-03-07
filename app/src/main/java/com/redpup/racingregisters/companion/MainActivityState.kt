@@ -30,12 +30,29 @@ enum class Event {
   BREAK,
   TRANSITION_TO_CONTINUE,
   CONTINUE,
+  HURRY_UP,
   RESET,
 }
 
 /** Wrapper on mutable state visually displayed in this activity.*/
-class MainActivityState(val timer: Timer, val transitionTimer: Timer, val music: BackgroundMusic) {
+class MainActivityState(
+  val timer: Timer,
+  val hurryUp: Int,
+  val transitionTimer: Timer,
+  val music: BackgroundMusic,
+) {
   val eventHandler = EventHandler<Event>()
+
+  init {
+    timer.eventHandler.clearSubscribers("MainActivityState")
+    timer.incrementHandler.subscribe(
+      hurryUp,
+      tag = "MainActivityState"
+    ) { eventHandler.handleSubscribers(Event.HURRY_UP) }
+  }
+
+  /** Whether this is currently in hurry up state. */
+  fun isHurryUp() = timer.remainingIncrements() <= hurryUp
 
   /** Invoked when the button is pushed. */
   fun action(buttonState: MainButtonState) {
@@ -104,10 +121,13 @@ class MainActivityState(val timer: Timer, val transitionTimer: Timer, val music:
       music.startContinue(this)
     }
     eventHandler.subscribe(Event.BREAK, tag = "setupMusic") {
-      music.startBreak()
+      music.startBreak(this)
     }
     timer.eventHandler.subscribe(TimerEvent.FINISH, tag = "setupMusic") {
       music.reset(this)
+    }
+    eventHandler.subscribe(Event.HURRY_UP, tag = "setupMusic") {
+      music.startHurryUp()
     }
 
     music.prepareAsync { eventHandler.handleSubscribers(Event.MUSIC_PREPARED) }
