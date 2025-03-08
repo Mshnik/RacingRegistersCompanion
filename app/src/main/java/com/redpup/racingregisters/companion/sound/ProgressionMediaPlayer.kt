@@ -13,21 +13,23 @@ class ProgressionMediaPlayer<T : AbstractMediaPlayer<T>>(private val progression
   /**
    * Advances this to the next track in the progression.
    * Goes back to the start if we've reached the end. */
-  fun advanceAndRotate() {
+  fun advanceAndRotate(): ProgressionMediaPlayer<T> {
     check(!isPlaying())
     currentIndex++
     if (currentIndex == progression.size) {
       currentIndex = 0
     }
+    return this
   }
 
   /**
    * Advances this to the next track in the progression.
    * Does nothing if we've reached the end.
    */
-  fun advanceAndCap() {
+  fun advanceAndCap(): ProgressionMediaPlayer<T> {
     check(!isPlaying())
     currentIndex = min(currentIndex + 1, progression.size - 1)
+    return this
   }
 
   override fun self() = this

@@ -46,6 +46,24 @@ private fun transitionMusic(context: Context) =
     )
   )
 
+
+/** Returns a progression media player of transition to hurry up music. */
+private fun transitionToHurryUpMusic(context: Context) =
+  ProgressionMediaPlayer(
+    listOf(
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_key_100bpm_c_105bpm_cs),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_key_105bpm_c_110bpm_cs),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_key_110bpm_c_115bpm_cs),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_key_115bpm_c_120bpm_cs),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_key_120bpm_c_125bpm_cs),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_key_125bpm_c_130bpm_cs),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_key_130bpm_c_135bpm_cs),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_key_135bpm_c_140bpm_cs),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_key_140bpm_c_145bpm_cs),
+    )
+  )
+
+
 /** Attaches this player to other, for seamless transition out of break. */
 private fun ProgressionMediaPlayer<ForwardingMediaPlayer>.setupLeaveTransition(
   other: ProgressionMediaPlayer<LoopMediaPlayer<ForwardingMediaPlayer>>,
@@ -57,13 +75,16 @@ private fun ProgressionMediaPlayer<ForwardingMediaPlayer>.setupLeaveTransition(
 class BackgroundMusic(context: Context) {
   private val mainMusic = mainMusic(context)
   private val hurryUpMusic = mainMusic(context)
-    // 5% faster
-    .setSpeed(1.05F)
     // Half a step higher (2^1/12).
     .setPitch(2.0.pow(1.0 / 12.0).toFloat())
+    // Skip the first track.
+    .advanceAndCap()
   private val breakMusic = breakMusic(context)
+  // TODO - Have to also have transition back in music in C# post hurry up.
   private val transitionMusic = transitionMusic(context)
-  private fun all() = listOf(mainMusic, hurryUpMusic, breakMusic, transitionMusic)
+  private val transitionToHurryUpMusic = transitionToHurryUpMusic(context)
+  private fun all() =
+    listOf(mainMusic, hurryUpMusic, breakMusic, transitionMusic, transitionToHurryUpMusic)
 
   fun prepareAsync(listener: () -> Unit) {
     val all = all()
@@ -93,9 +114,14 @@ class BackgroundMusic(context: Context) {
   fun startBreak(state: MainActivityState) {
     mainMusic.current().softReset()
     hurryUpMusic.current().softReset()
+    transitionToHurryUpMusic.current().softReset()
+
     breakMusic.start()
+
     mainMusic.advanceAndCap()
     hurryUpMusic.advanceAndCap()
+    transitionToHurryUpMusic.advanceAndCap()
+
     transitionMusic.current().softReset()
     if (state.isHurryUp()) {
       transitionMusic.setupLeaveTransition(hurryUpMusic)
@@ -123,7 +149,8 @@ class BackgroundMusic(context: Context) {
   /** Starts the hurry up music. */
   fun startHurryUp() {
     mainMusic.current().softReset()
-    hurryUpMusic.start()
+    transitionToHurryUpMusic.setupLeaveTransition(hurryUpMusic)
+    transitionToHurryUpMusic.start()
   }
 
   /** Resets the game music back to th  e initial state. */
@@ -132,6 +159,7 @@ class BackgroundMusic(context: Context) {
     hurryUpMusic.softReset()
     breakMusic.softReset()
     transitionMusic.softReset()
+    transitionToHurryUpMusic.softReset()
     state.transitionTimer.setSpeed(1000L, 1)
   }
 }

@@ -216,8 +216,6 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun RenderTimer(state: MainActivityState) {
-  val hurryUpSeconds = LocalContext.current.resources.getInteger(R.integer.timer_hurry_up_seconds)
-
   Row(
     verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -237,19 +235,20 @@ fun RenderTimer(state: MainActivityState) {
     }
     state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderTimer") {
       renderedTime = state.timer.toString()
+      timeColor = Grey50
     }
-    state.timer.incrementHandler.subscribe(hurryUpSeconds) {
+    state.eventHandler.subscribe(StateEvent.HURRY_UP) {
       timeColor = Red90
     }
     state.eventHandler.subscribe(
       StateEvent.TRANSITION_TO_START,
       StateEvent.TRANSITION_TO_CONTINUE, tag = "RenderTimer"
     ) {
-      timeColor = if (state.timer.remainingIncrements() <= hurryUpSeconds) Red90 else Green90
+      timeColor = if (state.isHurryUp()) Red90 else Green90
       renderedTime = state.transitionTimer.toString()
     }
     state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "RenderTimer") {
-      timeColor = if (state.timer.remainingIncrements() <= hurryUpSeconds) Red90 else White90
+      timeColor = if (state.isHurryUp()) Red90 else White90
       renderedTime = state.timer.toString()
     }
     state.eventHandler.subscribe(StateEvent.BREAK, tag = "RenderTimer") {
