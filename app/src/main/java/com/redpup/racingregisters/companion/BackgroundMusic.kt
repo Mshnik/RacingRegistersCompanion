@@ -14,35 +14,35 @@ import kotlin.math.pow
 private fun mainMusic(context: Context) =
   ProgressionMediaPlayer(
     listOf(
-      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_1)),
-      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_2)),
-      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_3)),
-      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_4)),
-      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_5)),
-      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_6)),
-      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_7)),
-      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_8)),
-      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_9)),
-      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_10))
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_100bpm_c)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_105bpm_c)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_110bpm_c)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_115bpm_c)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_120bpm_c)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_125bpm_c)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_130bpm_c)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_135bpm_c)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_140bpm_c)),
+      LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_145bpm_c))
     )
   )
 
 private fun breakMusic(context: Context) =
-  LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_1))
+  LoopMediaPlayer(ForwardingMediaPlayer(context, R.raw.music_background_100bpm_c))
 
 /** Returns a progression media player of transition out of break music. */
 private fun transitionMusic(context: Context) =
   ProgressionMediaPlayer(
     listOf(
-      ForwardingMediaPlayer(context, R.raw.music_background_2t),
-      ForwardingMediaPlayer(context, R.raw.music_background_3t),
-      ForwardingMediaPlayer(context, R.raw.music_background_4t),
-      ForwardingMediaPlayer(context, R.raw.music_background_5t),
-      ForwardingMediaPlayer(context, R.raw.music_background_6t),
-      ForwardingMediaPlayer(context, R.raw.music_background_7t),
-      ForwardingMediaPlayer(context, R.raw.music_background_8t),
-      ForwardingMediaPlayer(context, R.raw.music_background_9t),
-      ForwardingMediaPlayer(context, R.raw.music_background_10t)
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_100bpm_c_105bpm_c),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_100bpm_c_110bpm_c),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_100bpm_c_115bpm_c),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_100bpm_c_120bpm_c),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_100bpm_c_125bpm_c),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_100bpm_c_130bpm_c),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_100bpm_c_135bpm_c),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_100bpm_c_140bpm_c),
+      ForwardingMediaPlayer(context, R.raw.music_background_transition_100bpm_c_145bpm_c),
     )
   )
 
@@ -67,7 +67,7 @@ class BackgroundMusic(context: Context) {
 
   fun prepareAsync(listener: () -> Unit) {
     val all = all()
-    val fork = ForkedListener<Unit>(all.size, {}, { listener()  })
+    val fork = ForkedListener<Unit>(all.size, {}, { listener() })
     all.forEach { it.prepareAsync { fork.handle(Unit) } }
   }
 
@@ -90,7 +90,7 @@ class BackgroundMusic(context: Context) {
   }
 
   /** Starts a break, transitioning to break music. */
-  fun startBreak(state : MainActivityState) {
+  fun startBreak(state: MainActivityState) {
     mainMusic.current().softReset()
     hurryUpMusic.current().softReset()
     breakMusic.start()
