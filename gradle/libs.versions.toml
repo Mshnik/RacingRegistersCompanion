@@ -1,6 +1,7 @@
 [versions]
 agp = "8.8.0"
 appcompatV7 = "23.2.0"
+datastorePreferences = "1.1.7"
 guava = "32.0.1-jre"
 kotlin = "2.0.0"
 coreKtx = "1.10.1"
@@ -12,10 +13,15 @@ activityCompose = "1.8.0"
 composeBom = "2024.04.01"
 junitJupiter = "5.8.1"
 mockk = "1.13.16"
+protobufJavalite = "3.20.1"
+protobufKotlinLite = "3.20.1"
 truth = "0.40"
+compiler = "3.2.0-alpha11"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreferences" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 appcompat-v7 = { module = "com.android.support:appcompat-v7", version.ref = "appcompatV7" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -33,7 +39,10 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobufJavalite" }
+protobuf-kotlin-lite = { module = "com.google.protobuf:protobuf-kotlin-lite", version.ref = "protobufKotlinLite" }
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
+androidx-compiler = { group = "androidx.databinding", name = "compiler", version.ref = "compiler" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

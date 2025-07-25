@@ -1,12 +1,29 @@
+import com.google.protobuf.gradle.*
+
 plugins {
+  idea
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.kotlin.compose)
+  id("com.google.protobuf") version "0.9.4" // Add this line for the Protobuf plugin
 }
 
 android {
   namespace = "com.redpup.racingregisters.companion"
   compileSdk = 35
+
+  sourceSets {
+    getByName("main") {
+      manifest.srcFile("src/main/AndroidManifest.xml")
+      java.srcDirs("src/main/java")
+      assets.srcDirs(File("src/main/res"))
+      withGroovyBuilder {
+        "proto" {
+          "srcDir" ("src/main/proto")
+        }
+      }
+    }
+  }
 
   defaultConfig {
     applicationId = "com.redpup.racingregisters.companion"
@@ -37,16 +54,39 @@ android {
   }
 }
 
+// Corrected protobuf block
+protobuf {
+  protoc {
+    artifact = "com.google.protobuf:protoc:3.25.1" // Use a recent stable version
+  }
+  generateProtoTasks {
+    all().forEach { task ->
+      task.builtins {
+        create("java") {
+          option("lite")
+        }
+        create("kotlin") {
+          option("lite")
+        }
+      }
+    }
+  }
+}
+
 dependencies {
-  implementation(libs.androidx.core.ktx)
-  implementation(libs.androidx.lifecycle.runtime.ktx)
-  implementation(libs.androidx.activity.compose)
   implementation(platform(libs.androidx.compose.bom))
+  implementation(libs.androidx.activity.compose)
+  implementation(libs.androidx.core.ktx)
+  implementation(libs.androidx.datastore)
+  implementation(libs.androidx.lifecycle.runtime.ktx)
+  implementation(libs.androidx.material3)
   implementation(libs.androidx.ui)
   implementation(libs.androidx.ui.graphics)
   implementation(libs.androidx.ui.tooling.preview)
-  implementation(libs.androidx.material3)
   implementation(libs.guava)
+  implementation(libs.protobuf.javalite)
+  implementation(libs.protobuf.kotlin.lite)
+  implementation(libs.androidx.compiler)
   testImplementation(libs.junit)
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.truth)

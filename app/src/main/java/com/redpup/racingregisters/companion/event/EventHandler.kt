@@ -7,7 +7,7 @@ import com.google.common.collect.HashBasedTable
  * A generic handler for events. Allows subscription to a specific event, then invocation when
  * that event occurs.
  */
-class EventHandler<E> {
+class EventHandler<E : Any> {
   @GuardedBy("this")
   internal val subscribers = HashBasedTable.create<E, String, MutableSet<() -> Unit>>()
 

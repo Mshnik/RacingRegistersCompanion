@@ -1,0 +1,10 @@
+syntax = "proto2";
+
+package com.redpup.racingregisters.companion;
+
+option java_multiple_files = true;
+option java_package = "com.redpup.racingregisters.companion.proto";
+
+message Example {
+  optional int32 field = 1;
+}
