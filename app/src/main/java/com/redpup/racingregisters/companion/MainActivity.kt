@@ -55,6 +55,7 @@ import com.redpup.racingregisters.companion.Event as StateEvent
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.Timer
 import com.redpup.racingregisters.companion.ui.theme.DarkRed90
+import com.redpup.racingregisters.companion.ui.theme.Green50
 import com.redpup.racingregisters.companion.ui.theme.Green90
 import com.redpup.racingregisters.companion.ui.theme.Grey50
 import com.redpup.racingregisters.companion.ui.theme.Grey90
@@ -293,18 +294,30 @@ fun RenderBreakContinueButton(
   var borderColor by remember { mutableStateOf(Color.Black) }
 
   var buttonReady by remember { mutableStateOf(false) }
-  state.eventHandler.subscribe(
-    StateEvent.MUSIC_PREPARED,
-    tag = "RenderBreakContinueButton"
-  ) { buttonReady = true }
-
   var buttonEnabled by remember { mutableStateOf(true) }
+
+  val buttonClickable = { buttonReady && buttonEnabled }
 
   fun updateColors() {
     val isBreak = buttonState == MainButtonState.BREAK
-    textColor = if (isBreak) Color.Black else Green90
-    backgroundColor = if (isBreak) White90 else Color.Black
-    borderColor = if (isBreak) White90 else Green90
+    val isButtonClickable = buttonClickable()
+    if (isBreak) {
+      textColor = if(isButtonClickable) Color.Black else Grey90
+      backgroundColor = if(isButtonClickable) White90 else Grey50
+      borderColor = if(isButtonClickable) White90 else Grey50
+    } else {
+      textColor =  if(isButtonClickable) Green90 else Grey50
+      backgroundColor = if(isButtonClickable) Color.Black else Grey90
+      borderColor = if(isButtonClickable) Green90 else Grey50
+    }
+  }
+
+  state.eventHandler.subscribe(
+    StateEvent.MUSIC_PREPARED,
+    tag = "RenderBreakContinueButton"
+  ) {
+    buttonReady = true
+    updateColors()
   }
   updateColors()
 
@@ -314,6 +327,7 @@ fun RenderBreakContinueButton(
     tag = "RenderBreakContinueButton"
   ) {
     buttonEnabled = false
+    updateColors()
   }
   state.eventHandler.subscribe(
     StateEvent.START,
@@ -322,13 +336,13 @@ fun RenderBreakContinueButton(
     tag = "RenderBreakContinueButton"
   ) {
     buttonState = buttonState.toggle()
-    updateColors()
     buttonEnabled = true
+    updateColors()
   }
   state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderBreakContinueButton") {
     buttonState = initialState
-    updateColors()
     buttonEnabled = true
+    updateColors()
   }
 
   val buttonFont = TextStyle(
@@ -350,7 +364,7 @@ fun RenderBreakContinueButton(
   ) {
     Button(
       onClick = { state.action(buttonState) },
-      enabled = buttonReady && buttonEnabled,
+      enabled = buttonClickable(),
       border = BorderStroke(
         width = borderThickness, color = borderColor
       ),
