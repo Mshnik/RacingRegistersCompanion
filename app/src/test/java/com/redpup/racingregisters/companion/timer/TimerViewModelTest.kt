@@ -59,7 +59,7 @@ class TimerViewModelTest {
 
   @Test
   fun startDoesNotStartIfTimeIsElapsed() = runBlocking {
-    timer._ticks.value = Integer.MAX_VALUE
+    timer.setTicksForTest(Integer.MAX_VALUE)
     timer.start()
 
     assertThat(timer.isRunning.first()).isFalse()
@@ -142,9 +142,9 @@ class TimerViewModelTest {
   @Test
   fun toStringFormatsString() {
     assertThat(timer.formatTime()).isEqualTo("1:40")
-    timer._ticks.value = 50
+    timer.setTicksForTest(50)
     assertThat(timer.formatTime()).isEqualTo("1:35")
-    timer._ticks.value = Integer.MAX_VALUE
+    timer.setTicksForTest(Integer.MAX_VALUE)
     assertThat(timer.formatTime()).isEqualTo("DONE")
   }
 

@@ -2,6 +2,7 @@ package com.redpup.racingregisters.companion.timer
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.common.annotations.VisibleForTesting
 import kotlin.math.max
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -28,8 +29,13 @@ class TimerViewModel(
     require(completeAtIncrements >= 0)
   }
 
-  internal val _ticks = MutableStateFlow(0)
+  private val _ticks = MutableStateFlow(0)
   val ticks: StateFlow<Int> = _ticks
+
+  @VisibleForTesting
+  internal fun setTicksForTest(ticks: Int) {
+    _ticks.value = ticks
+  }
 
   private val _numResumes = MutableStateFlow(0)
   val numResumes: StateFlow<Int> = _numResumes
