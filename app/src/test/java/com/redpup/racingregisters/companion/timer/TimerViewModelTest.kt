@@ -101,15 +101,14 @@ class TimerViewModelTest {
   fun timerIncrementsTicks() = runBlocking {
     timer.start()
     timer.ticks.test {
-      assertThat(awaitItem()).isEqualTo(0)
       delayTicks(2L)
+      assertThat(awaitItem()).isEqualTo(0)
       assertThat(awaitItem()).isEqualTo(1)
       assertThat(awaitItem()).isEqualTo(2)
     }
   }
 
   @Test
-  @Ignore
   fun timerIncrementsIncrements() = runBlocking {
     timer.start()
     timer.elapsedIncrements.test {
@@ -121,7 +120,6 @@ class TimerViewModelTest {
   }
 
   @Test
-  @Ignore
   fun timerDecrementsRemainingIncrements() = runBlocking {
     timer.start()
     timer.remainingIncrements.test {

@@ -8,6 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -39,23 +40,28 @@ class TimerViewModel(
   private var timerJob: Job? = null
 
   /** The amount of milli-Increments that have passed. */
-  private fun elapsedMilliIncrements(ticks : Int = _ticks.value): Int {
+  private fun elapsedMilliIncrements(ticks: Int = _ticks.value): Int {
     return ticks * millisPerIncrement / ticksPerIncrement
   }
-  val elapsedMilliIncrements : Flow<Int> = ticks.map { elapsedMilliIncrements(it) }
+
+  val elapsedMilliIncrements: Flow<Int> =
+    ticks.map { elapsedMilliIncrements(it) }.distinctUntilChanged()
 
   /** The whole number of elapsed increments. */
   private fun elapsedIncrements(ticks: Int = _ticks.value): Int {
-    return ticks  / ticksPerIncrement
+    return ticks / ticksPerIncrement
   }
-  val elapsedIncrements : Flow<Int> = ticks.map { elapsedIncrements(it) }
+
+  val elapsedIncrements: Flow<Int> = ticks.map { elapsedIncrements(it) }.distinctUntilChanged()
 
 
   /** The whole number of remaining increments. */
   private fun remainingIncrements(ticks: Int = _ticks.value): Int {
     return max(0, initialIncrements - elapsedIncrements(ticks))
   }
-  val remainingIncrements : Flow<Int> = ticks.map { remainingIncrements(it) }
+
+  val remainingIncrements: Flow<Int> = ticks.map { remainingIncrements(it) }
+    .distinctUntilChanged()
 
   /**
    * Starts the timer. If the timer is already running, this does nothing.
