@@ -76,6 +76,7 @@ protobuf {
 dependencies {
   implementation(platform(libs.androidx.compose.bom))
   implementation(libs.androidx.activity.compose)
+  implementation(libs.androidx.compiler)
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.datastore)
   implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -84,17 +85,22 @@ dependencies {
   implementation(libs.androidx.ui.graphics)
   implementation(libs.androidx.ui.tooling.preview)
   implementation(libs.guava)
+  implementation(libs.junit)
+  implementation(libs.kotlinx.coroutines.test)
   implementation(libs.protobuf.javalite)
   implementation(libs.protobuf.kotlin.lite)
-  implementation(libs.androidx.compiler)
-  testImplementation(libs.junit)
+
+  testImplementation(libs.jetbrains.kotlinx.coroutines.test)
   testImplementation(libs.junit.jupiter)
-  testImplementation(libs.truth)
   testImplementation(libs.mockk)
+  testImplementation(libs.truth)
+  testImplementation(libs.turbine)
+
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
   androidTestImplementation(platform(libs.androidx.compose.bom))
   androidTestImplementation(libs.androidx.ui.test.junit4)
+
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
 }

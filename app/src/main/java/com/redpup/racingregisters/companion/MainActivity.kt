@@ -378,103 +378,103 @@ fun RenderBreakContinueButton(
   }
 }
 
-
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.timerexample.ui.theme.TimerExampleTheme // Assuming a theme file exists
-
-class MainActivity : ComponentActivity() {
-
-  // Lazily initialize the ViewModel
-  private val timerViewModel: TimerViewModel by viewModels()
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    setContent {
-      // Assuming you have a theme wrapper, e.g., from the Compose template
-      TimerExampleTheme {
-        Surface(
-          modifier = Modifier.fillMaxSize(),
-          color = Color(0xFF121212) // Dark background color
-        ) {
-          TimerScreen(viewModel = timerViewModel)
-        }
-      }
-    }
-  }
-}
-
-@Composable
-fun TimerScreen(viewModel: TimerViewModel) {
-  // Collect the StateFlows from the ViewModel as Compose State
-  val time by viewModel.time.collectAsState()
-  val isRunning by viewModel.isRunning.collectAsState()
-
-  Column(
-    modifier = Modifier.fillMaxSize(),
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.Center
-  ) {
-    // Timer Text Display
-    Text(
-      text = viewModel.formatTime(time),
-      fontSize = 100.sp,
-      fontWeight = FontWeight.Light,
-      color = Color.White
-    )
-
-    Spacer(modifier = Modifier.height(48.dp))
-
-    // Control Buttons
-    Row(
-      horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-      // Show Start or Pause button based on the isRunning state
-      if (isRunning) {
-        Button(
-          onClick = { viewModel.pauseTimer() },
-          colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)) // Red for Pause
-        ) {
-          Text(text = "Pause", fontSize = 16.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-        }
-      } else {
-        Button(
-          onClick = { viewModel.startTimer() },
-          colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)) // Green for Start
-        ) {
-          Text(text = "Start", fontSize = 16.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-        }
-      }
-
-      // Reset Button
-      Button(
-        onClick = { viewModel.resetTimer() },
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-      ) {
-        Text(text = "Reset", fontSize = 16.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-      }
-    }
-  }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF121212)
-@Composable
-fun DefaultPreview() {
-  TimerExampleTheme {
-    TimerScreen(viewModel = TimerViewModel())
-  }
-}
+//
+// import android.os.Bundle
+// import androidx.activity.ComponentActivity
+// import androidx.activity.compose.setContent
+// import androidx.activity.viewModels
+// import androidx.compose.foundation.layout.*
+// import androidx.compose.material3.*
+// import androidx.compose.runtime.Composable
+// import androidx.compose.runtime.collectAsState
+// import androidx.compose.runtime.getValue
+// import androidx.compose.ui.Alignment
+// import androidx.compose.ui.Modifier
+// import androidx.compose.ui.graphics.Color
+// import androidx.compose.ui.text.font.FontWeight
+// import androidx.compose.ui.tooling.preview.Preview
+// import androidx.compose.ui.unit.dp
+// import androidx.compose.ui.unit.sp
+// import com.example.timerexample.ui.theme.TimerExampleTheme // Assuming a theme file exists
+//
+// class MainActivity : ComponentActivity() {
+//
+//   // Lazily initialize the ViewModel
+//   private val timerViewModel: TimerViewModel by viewModels()
+//
+//   override fun onCreate(savedInstanceState: Bundle?) {
+//     super.onCreate(savedInstanceState)
+//     setContent {
+//       // Assuming you have a theme wrapper, e.g., from the Compose template
+//       TimerExampleTheme {
+//         Surface(
+//           modifier = Modifier.fillMaxSize(),
+//           color = Color(0xFF121212) // Dark background color
+//         ) {
+//           TimerScreen(viewModel = timerViewModel)
+//         }
+//       }
+//     }
+//   }
+// }
+//
+// @Composable
+// fun TimerScreen(viewModel: TimerViewModel) {
+//   // Collect the StateFlows from the ViewModel as Compose State
+//   val time by viewModel.time.collectAsState()
+//   val isRunning by viewModel.isRunning.collectAsState()
+//
+//   Column(
+//     modifier = Modifier.fillMaxSize(),
+//     horizontalAlignment = Alignment.CenterHorizontally,
+//     verticalArrangement = Arrangement.Center
+//   ) {
+//     // Timer Text Display
+//     Text(
+//       text = viewModel.formatTime(time),
+//       fontSize = 100.sp,
+//       fontWeight = FontWeight.Light,
+//       color = Color.White
+//     )
+//
+//     Spacer(modifier = Modifier.height(48.dp))
+//
+//     // Control Buttons
+//     Row(
+//       horizontalArrangement = Arrangement.spacedBy(16.dp)
+//     ) {
+//       // Show Start or Pause button based on the isRunning state
+//       if (isRunning) {
+//         Button(
+//           onClick = { viewModel.pauseTimer() },
+//           colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)) // Red for Pause
+//         ) {
+//           Text(text = "Pause", fontSize = 16.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+//         }
+//       } else {
+//         Button(
+//           onClick = { viewModel.startTimer() },
+//           colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)) // Green for Start
+//         ) {
+//           Text(text = "Start", fontSize = 16.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+//         }
+//       }
+//
+//       // Reset Button
+//       Button(
+//         onClick = { viewModel.resetTimer() },
+//         colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+//       ) {
+//         Text(text = "Reset", fontSize = 16.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+//       }
+//     }
+//   }
+// }
+//
+// @Preview(showBackground = true, backgroundColor = 0xFF121212)
+// @Composable
+// fun DefaultPreview() {
+//   TimerExampleTheme {
+//     TimerScreen(viewModel = TimerViewModel())
+//   }
+// }
