@@ -3,26 +3,26 @@ package com.redpup.racingregisters.companion.event
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
-/** Typed handler function with name based equality for test clarity. */
-class Handler(val name: String = "Handler", val fn: () -> Unit = {}) : () -> Unit {
-  override fun invoke() {
-    fn()
-  }
-
-  override fun equals(other: Any?): Boolean {
-    return other is Handler && other.name == name
-  }
-
-  override fun hashCode(): Int {
-    return name.hashCode()
-  }
-
-  override fun toString(): String {
-    return name
-  }
-}
-
 class EventHandlerTest {
+  /** Typed handler function with name based equality for test clarity. */
+  class Handler(val name: String = "Handler", val fn: () -> Unit = {}) : () -> Unit {
+    override fun invoke() {
+      fn()
+    }
+
+    override fun equals(other: Any?): Boolean {
+      return other is Handler && other.name == name
+    }
+
+    override fun hashCode(): Int {
+      return name.hashCode()
+    }
+
+    override fun toString(): String {
+      return name
+    }
+  }
+
 
   private val eventHandler = EventHandler<Int>()
 

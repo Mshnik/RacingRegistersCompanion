@@ -7,7 +7,9 @@ import kotlin.math.max
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ class TimerViewModel(
   internal val numResumes = MutableStateFlow(0)
   internal val isRunning = MutableStateFlow(false)
 
+  /** The currently running timer job, if any. */
   private var timerJob: Job? = null
 
   /** The amount of milli-Increments that have passed. */

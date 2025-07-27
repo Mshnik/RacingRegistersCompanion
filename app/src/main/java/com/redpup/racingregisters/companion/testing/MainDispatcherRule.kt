@@ -29,7 +29,7 @@ import org.junit.runner.Description
 // Reusable JUnit4 TestRule to override the Main dispatcher
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainDispatcherRule(
-  private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
+  val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
 ) : TestWatcher() {
   override fun starting(description: Description) {
     Dispatchers.setMain(testDispatcher)
@@ -41,6 +41,10 @@ class MainDispatcherRule(
 
   fun advanceTimeBy(millis: Long) {
     testDispatcher.scheduler.advanceTimeBy(millis)
+  }
+
+  fun advanceUntilIdle() {
+    testDispatcher.scheduler.advanceUntilIdle()
   }
 }
 // [END coroutine_test_homeviewmodeltest_with_rule]
