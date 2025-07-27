@@ -86,7 +86,8 @@ dependencies {
   implementation(libs.androidx.ui.tooling.preview)
   implementation(libs.guava)
   implementation(libs.junit)
-  implementation(libs.kotlinx.coroutines.test)
+  implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.kotlinx.coroutines.test.v1102)
   implementation(libs.protobuf.javalite)
   implementation(libs.protobuf.kotlin.lite)
 

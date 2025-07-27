@@ -2,13 +2,18 @@ package com.redpup.racingregisters.companion.timer
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.redpup.racingregisters.companion.event.tagged
+import com.redpup.racingregisters.companion.event.testing.FakeEventBus
 import com.redpup.racingregisters.companion.testing.MainDispatcherRule
+import com.redpup.racingregisters.companion.testing.asUnit
+import com.redpup.racingregisters.companion.testing.pass
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 
 class TimerViewModelTest {
   companion object {
@@ -21,10 +26,23 @@ class TimerViewModelTest {
   val mainDispatcherRule = MainDispatcherRule()
 
   private lateinit var timer: TimerViewModel
+  private lateinit var fakeEventBus: FakeEventBus<Event>
+  private lateinit var fakeIncrementBus: FakeEventBus<Int>
 
   @Before
   fun setup() {
     timer = TimerViewModel(DURATION_INCREMENTS, INCREMENT_MILLIS, TICKS_PER_INCREMENT)
+    fakeEventBus = FakeEventBus(timer.eventBus, mainDispatcherRule.testDispatcher)
+    fakeIncrementBus = FakeEventBus(timer.incrementBus, mainDispatcherRule.testDispatcher)
+
+    fakeEventBus.launch()
+    fakeIncrementBus.launch()
+  }
+
+  @After
+  fun tearDown() {
+    fakeEventBus.tearDown()
+    fakeIncrementBus.tearDown()
   }
 
   @Test
@@ -45,16 +63,20 @@ class TimerViewModelTest {
 
     assertThat(timer.isRunning.first()).isTrue()
     assertThat(timer.numResumes.first()).isEqualTo(1)
+
+    assertThat(fakeEventBus.consumeResults()).contains(Event.ACTIVATE.tagged())
   }
 
   @Test
   fun multipleStartsNoOps() = runBlocking {
     timer.start()
+
+    assertThat(fakeEventBus.consumeResults()).contains(Event.ACTIVATE.tagged())
+
     timer.start()
     timer.start()
 
-    assertThat(timer.isRunning.first()).isTrue()
-    assertThat(timer.numResumes.first()).isEqualTo(1)
+    assertThat(fakeEventBus.consumeResults()).isEmpty()
   }
 
   @Test
@@ -64,6 +86,7 @@ class TimerViewModelTest {
 
     assertThat(timer.isRunning.first()).isFalse()
     assertThat(timer.numResumes.first()).isEqualTo(0)
+    assertThat(fakeEventBus.consumeResults()).isEmpty()
   }
 
   @Test
@@ -73,6 +96,10 @@ class TimerViewModelTest {
 
     assertThat(timer.isRunning.first()).isFalse()
     assertThat(timer.numResumes.first()).isEqualTo(1)
+    assertThat(fakeEventBus.consumeResults()).containsAllOf(
+      Event.ACTIVATE.tagged(),
+      Event.DEACTIVATE.tagged()
+    ).inOrder()
   }
 
   @Test
@@ -84,6 +111,12 @@ class TimerViewModelTest {
 
     assertThat(timer.isRunning.first()).isFalse()
     assertThat(timer.numResumes.first()).isEqualTo(2)
+    assertThat(fakeEventBus.consumeResults()).containsAllOf(
+      Event.ACTIVATE.tagged(),
+      Event.DEACTIVATE.tagged(),
+      Event.ACTIVATE.tagged(),
+      Event.DEACTIVATE.tagged()
+    ).inOrder()
   }
 
   @Test
@@ -95,6 +128,10 @@ class TimerViewModelTest {
 
     assertThat(timer.isRunning.first()).isFalse()
     assertThat(timer.numResumes.first()).isEqualTo(1)
+    assertThat(fakeEventBus.consumeResults()).containsAllOf(
+      Event.ACTIVATE.tagged(),
+      Event.DEACTIVATE.tagged(),
+    ).inOrder()
   }
 
   @Test
@@ -106,6 +143,13 @@ class TimerViewModelTest {
       assertThat(awaitItem()).isEqualTo(1)
       assertThat(awaitItem()).isEqualTo(2)
     }
+
+    assertThat(fakeEventBus.consumeResults()).containsAllOf(
+      Event.ACTIVATE.tagged(),
+      Event.TICK.tagged(),
+      Event.TICK.tagged(),
+      Event.TICK.tagged(),
+    ).inOrder()
   }
 
   @Test
@@ -128,6 +172,11 @@ class TimerViewModelTest {
       assertThat(awaitItem()).isEqualTo(DURATION_INCREMENTS - 1)
       assertThat(awaitItem()).isEqualTo(DURATION_INCREMENTS - 2)
     }
+
+    assertThat(fakeIncrementBus.consumeResults()).containsAllOf(
+      (DURATION_INCREMENTS - 1).tagged(),
+      (DURATION_INCREMENTS - 2).tagged(),
+    ).inOrder()
   }
 
   @Test

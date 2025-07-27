@@ -16,6 +16,7 @@
 
 package com.redpup.racingregisters.companion.testing
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
@@ -25,8 +26,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
-// [START coroutine_test_homeviewmodeltest_with_rule]
-// Reusable JUnit4 TestRule to override the Main dispatcher
+/** A test rule that attaches a [TestDispatcher] for coroutine testing. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainDispatcherRule(
   val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
@@ -39,12 +39,17 @@ class MainDispatcherRule(
     Dispatchers.resetMain()
   }
 
+  fun scope() : CoroutineScope {
+    return CoroutineScope(testDispatcher)
+  }
+
+  /** See [TestDispatcher.scheduler].advanceTimeBy. */
   fun advanceTimeBy(millis: Long) {
     testDispatcher.scheduler.advanceTimeBy(millis)
   }
 
+  /** See [TestDispatcher.scheduler].advanceUntilIdle. */
   fun advanceUntilIdle() {
     testDispatcher.scheduler.advanceUntilIdle()
   }
 }
-// [END coroutine_test_homeviewmodeltest_with_rule]

@@ -3,6 +3,7 @@ package com.redpup.racingregisters.companion.timer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.common.annotations.VisibleForTesting
+import com.redpup.racingregisters.companion.event.EventBus
 import kotlin.math.max
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -36,6 +37,9 @@ class TimerViewModel(
   /** The currently running timer job, if any. */
   private var timerJob: Job? = null
 
+  val eventBus = EventBus<Event>()
+  val incrementBus = EventBus<Int>()
+
   /** The amount of milli-Increments that have passed. */
   private fun elapsedMilliIncrements(ticks: Int = this.ticks.value): Int {
     return ticks * millisPerIncrement / ticksPerIncrement
@@ -62,8 +66,8 @@ class TimerViewModel(
   /**
    * Starts the timer. If the timer is already running, this does nothing.
    */
-  fun start() {
-    if (isRunning.value || timerJob?.isActive == true || remainingIncrements() == 0) {
+  suspend fun start() {
+    if (isRunning.value || remainingIncrements() == 0) {
       return
     }
 
@@ -77,28 +81,21 @@ class TimerViewModel(
         tick()
       }
     }
-  }
 
-  private fun tick() {
-    if (!isRunning.value) {
-      return
-    }
-
-    ticks.value++
-    if (ticks.value % ticksPerIncrement == 0) {
-      val remainingIncrements = remainingIncrements()
-      if (remainingIncrements == 0) {
-        pause()
-      }
-    }
+    eventBus.emit(Event.ACTIVATE)
   }
 
   /**
    * Pauses the timer.
    */
-  fun pause() {
+  suspend fun pause() {
+    if (!isRunning.value) {
+      return
+    }
+
     isRunning.value = false
     timerJob?.cancel()
+    eventBus.emit(Event.DEACTIVATE)
   }
 
   /**
@@ -108,6 +105,32 @@ class TimerViewModel(
     isRunning.value = false
     timerJob?.cancel()
     ticks.value = 0
+  }
+
+  /** Advances the timer one tick. */
+  private suspend fun tick() {
+    if (!isRunning.value) {
+      return
+    }
+
+    ticks.value++
+    eventBus.emit(Event.TICK)
+
+    if (ticks.value % ticksPerIncrement == 0) {
+      eventBus.emit(Event.SECOND)
+
+      val remainingIncrements = remainingIncrements()
+      incrementBus.emit(remainingIncrements)
+
+      if (remainingIncrements == completeAtIncrements) {
+        eventBus.emit(Event.COMPLETE)
+      }
+
+      if (remainingIncrements == 0) {
+        pause()
+        eventBus.emit(Event.FINISH)
+      }
+    }
   }
 
   /**
