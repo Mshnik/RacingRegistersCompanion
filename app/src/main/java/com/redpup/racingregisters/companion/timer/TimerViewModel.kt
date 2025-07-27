@@ -8,9 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -29,24 +27,14 @@ class TimerViewModel(
     require(completeAtIncrements >= 0)
   }
 
-  private val _ticks = MutableStateFlow(0)
-  val ticks: StateFlow<Int> = _ticks
-
-  @VisibleForTesting
-  internal fun setTicksForTest(ticks: Int) {
-    _ticks.value = ticks
-  }
-
-  private val _numResumes = MutableStateFlow(0)
-  val numResumes: StateFlow<Int> = _numResumes
-
-  private val _isRunning = MutableStateFlow(false)
-  val isRunning: StateFlow<Boolean> = _isRunning
+  internal val ticks = MutableStateFlow(0)
+  internal val numResumes = MutableStateFlow(0)
+  internal val isRunning = MutableStateFlow(false)
 
   private var timerJob: Job? = null
 
   /** The amount of milli-Increments that have passed. */
-  private fun elapsedMilliIncrements(ticks: Int = _ticks.value): Int {
+  private fun elapsedMilliIncrements(ticks: Int = this.ticks.value): Int {
     return ticks * millisPerIncrement / ticksPerIncrement
   }
 
@@ -54,35 +42,34 @@ class TimerViewModel(
     ticks.map { elapsedMilliIncrements(it) }.distinctUntilChanged()
 
   /** The whole number of elapsed increments. */
-  private fun elapsedIncrements(ticks: Int = _ticks.value): Int {
+  private fun elapsedIncrements(ticks: Int = this.ticks.value): Int {
     return ticks / ticksPerIncrement
   }
 
   val elapsedIncrements: Flow<Int> = ticks.map { elapsedIncrements(it) }.distinctUntilChanged()
 
-
   /** The whole number of remaining increments. */
-  private fun remainingIncrements(ticks: Int = _ticks.value): Int {
+  private fun remainingIncrements(ticks: Int = this.ticks.value): Int {
     return max(0, initialIncrements - elapsedIncrements(ticks))
   }
 
-  val remainingIncrements: Flow<Int> = ticks.map { remainingIncrements(it) }
+  val remainingIncrements: Flow<Int> = this.ticks.map { remainingIncrements(it) }
     .distinctUntilChanged()
 
   /**
    * Starts the timer. If the timer is already running, this does nothing.
    */
   fun start() {
-    if (_isRunning.value || timerJob?.isActive == true || remainingIncrements() == 0) {
+    if (isRunning.value || timerJob?.isActive == true || remainingIncrements() == 0) {
       return
     }
 
-    _isRunning.value = true
+    isRunning.value = true
     val delay = (millisPerIncrement / ticksPerIncrement).toLong()
-    _numResumes.value++
+    numResumes.value++
 
     timerJob = viewModelScope.launch {
-      while (remainingIncrements() > 0 && _isRunning.value) {
+      while (remainingIncrements() > 0 && isRunning.value) {
         delay(delay)
         tick()
       }
@@ -90,12 +77,12 @@ class TimerViewModel(
   }
 
   private fun tick() {
-    if (!_isRunning.value) {
+    if (!isRunning.value) {
       return
     }
 
-    _ticks.value++
-    if (_ticks.value % ticksPerIncrement == 0) {
+    ticks.value++
+    if (ticks.value % ticksPerIncrement == 0) {
       val remainingIncrements = remainingIncrements()
       if (remainingIncrements == 0) {
         pause()
@@ -107,7 +94,7 @@ class TimerViewModel(
    * Pauses the timer.
    */
   fun pause() {
-    _isRunning.value = false
+    isRunning.value = false
     timerJob?.cancel()
   }
 
@@ -115,9 +102,9 @@ class TimerViewModel(
    * Resets the timer to the initial state.
    */
   fun reset() {
-    _isRunning.value = false
+    isRunning.value = false
     timerJob?.cancel()
-    _ticks.value = 0
+    ticks.value = 0
   }
 
   /**
