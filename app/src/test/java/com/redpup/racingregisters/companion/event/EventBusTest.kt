@@ -71,4 +71,21 @@ class EventBusTest {
     assertThat(results).containsExactly(99, 99, 99)
     job.cancel()
   }
+
+  @Test
+  fun subscribeSubscribesToFilteredEvents_withLimit() = runBlocking {
+    val results = mutableListOf<Int>()
+    val job = launch(mainDispatcherRule.testDispatcher) {
+      eventBus.subscribe(1, 2, 3, limit = 2) { results.add(99) }
+    }
+
+    eventBus.emit(1)
+    eventBus.emit(2)
+    eventBus.emit(3)
+    eventBus.emit(4)
+    mainDispatcherRule.advanceUntilIdle()
+
+    assertThat(results).containsExactly(99, 99)
+    job.cancel()
+  }
 }

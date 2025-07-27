@@ -2,6 +2,7 @@ package com.redpup.racingregisters.companion.event
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.take
 
 /**
  * A generic handler for events. Allows subscription to a specific event, then invocation when
@@ -28,9 +29,10 @@ class EventBus<E : Any> {
   /**
    * Subscribes to events on the bus with the given events and tag.
    */
-  suspend fun subscribe(vararg events: E, tag: String = "", action: () -> Unit) {
-    this.events
+  suspend fun subscribe(vararg events: E, tag: String = "", limit: Int? = null, action: suspend () -> Unit) {
+    val filtered = this.events
       .filter { events.contains(it.value()) && it.tag() == tag }
-      .collect { action() }
+    val limited = if(limit == null) filtered else filtered.take(limit)
+    limited.collect { action() }
   }
 }

@@ -2,15 +2,12 @@ package com.redpup.racingregisters.companion.timer
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.common.annotations.VisibleForTesting
 import com.redpup.racingregisters.companion.event.EventBus
 import kotlin.math.max
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -62,6 +59,26 @@ class TimerViewModel(
 
   val remainingIncrements: Flow<Int> = this.ticks.map { remainingIncrements(it) }
     .distinctUntilChanged()
+
+  /** Scales the speed of this timer to match [durationMillis]. */
+  fun scaleSpeed(durationMillis: Int) {
+    val timerIntervalDuration =
+      (durationMillis / remainingIncrements().toFloat()).toInt()
+    setSpeed(timerIntervalDuration, 1)
+  }
+
+  /**
+   * Sets the speed of this timer. This can only be done when the timer is not running and
+   * has been reset.
+   */
+  fun setSpeed(millisPerIncrement: Int, ticksPerIncrement: Int) {
+    check(!isRunning.value && ticks.value == 0)
+    check(ticksPerIncrement > 0 && millisPerIncrement % ticksPerIncrement == 0) {
+      "ticksPerIncrement must be positive and evenly divide $millisPerIncrement."
+    }
+    this.millisPerIncrement = millisPerIncrement
+    this.ticksPerIncrement = ticksPerIncrement
+  }
 
   /**
    * Starts the timer. If the timer is already running, this does nothing.
@@ -136,8 +153,7 @@ class TimerViewModel(
   /**
    * Formats the time in seconds to a MM:ss string.
    */
-  fun formatTime(): String {
-    val remaining = remainingIncrements() - completeAtIncrements
+  fun formatTime(remaining: Int = remainingIncrements() - completeAtIncrements): String {
     if (remaining <= 0) {
       return completionMessage
     }
@@ -152,4 +168,8 @@ class TimerViewModel(
       return "${minutes}:$increments"
     }
   }
+
+  val formattedTime: Flow<String> =
+    remainingIncrements.map { formatTime(it - completeAtIncrements) }
+      .distinctUntilChanged()
 }

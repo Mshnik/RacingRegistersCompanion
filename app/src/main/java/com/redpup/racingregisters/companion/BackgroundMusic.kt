@@ -123,11 +123,11 @@ class BackgroundMusic(context: Context) {
     transitionToHurryUpMusic.advanceAndCap()
 
     transitionMusic.current().softReset()
-    if (state.isHurryUp()) {
-      transitionMusic.setupLeaveTransition(hurryUpMusic)
-    } else {
-      transitionMusic.setupLeaveTransition(mainMusic)
-    }
+    // if (state.isHurryUp()) {
+    //   transitionMusic.setupLeaveTransition(hurryUpMusic)
+    // } else {
+    //   transitionMusic.setupLeaveTransition(mainMusic)
+    // }
   }
 
   /** Begins a transition back to main game music. */
@@ -160,6 +160,6 @@ class BackgroundMusic(context: Context) {
     breakMusic.softReset()
     transitionMusic.softReset()
     transitionToHurryUpMusic.softReset()
-    state.transitionTimer.setSpeed(1000L, 1)
+    state.transitionTimer.setSpeed(1000, 1)
   }
 }

@@ -1,10 +1,13 @@
 package com.redpup.racingregisters.companion
 
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -28,6 +31,8 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
@@ -51,9 +56,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.redpup.racingregisters.companion.Event as StateEvent
-import com.redpup.racingregisters.companion.timer.Event as TimerEvent
-import com.redpup.racingregisters.companion.timer.Timer
+import com.redpup.racingregisters.companion.timer.TimerViewModel
 import com.redpup.racingregisters.companion.ui.theme.DarkRed90
 import com.redpup.racingregisters.companion.ui.theme.Green90
 import com.redpup.racingregisters.companion.ui.theme.Grey50
@@ -64,10 +67,11 @@ import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
 import com.redpup.racingregisters.companion.ui.theme.sixtyFour
 import kotlin.math.hypot
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 
 class MainActivity : ComponentActivity() {
-  private lateinit var state: MainActivityState
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -75,38 +79,32 @@ class MainActivity : ComponentActivity() {
     val timerDuration = baseContext.resources.getInteger(R.integer.timer_duration_seconds)
     val hurryUpTime = baseContext.resources.getInteger(R.integer.timer_hurry_up_seconds)
     val transitionDuration = baseContext.resources.getInteger(R.integer.transition_duration_seconds)
-    state = MainActivityState(
-      Timer(timerDuration),
+
+    val state = MainActivityState(
+      TimerViewModel(timerDuration),
       hurryUpTime,
-      Timer(transitionDuration, completeAtIncrements = 1, completionMessage = "GO!"),
-      BackgroundMusic(baseContext)
+      TimerViewModel(transitionDuration, completeAtIncrements = 1, completionMessage = "GO!"),
+      // BackgroundMusic(baseContext)
     )
 
     val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
-
     enableEdgeToEdge()
     setContent {
       RacingRegistersCompanionTheme {
         Scaffold(topBar = { RenderTopBar(state) }) { innerPadding ->
           RenderBackground(state, numBackgroundBars)
-          RenderScreen(state, Modifier.padding(innerPadding))
+          RenderScreen(state, lifecycleScope, Modifier.padding(innerPadding))
         }
       }
     }
 
-    state.setupMusic(baseContext)
-    state.setupSound(baseContext)
   }
 }
 
 @Composable
 fun RenderTopBar(state: MainActivityState) {
   val size = 50.dp
-  var enabled by remember { mutableStateOf(false) }
-
-  state.eventHandler.clearSubscribers("RenderTopBar")
-  state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderTopBar") { enabled = false }
-  state.eventHandler.subscribe(StateEvent.START, tag = "RenderTopBar") { enabled = true }
+  val enabled = state.resetButtonEnabled.collectAsState()
 
   Row(
     modifier = Modifier
@@ -117,7 +115,7 @@ fun RenderTopBar(state: MainActivityState) {
   ) {
     Button(
       onClick = { state.reset() },
-      enabled = enabled,
+      enabled = enabled.value,
       colors = ButtonColors(
         Color.Black,
         Color.Black,
@@ -132,14 +130,14 @@ fun RenderTopBar(state: MainActivityState) {
       Image(
         painter = painterResource(R.drawable.reset),
         contentDescription = "Reset icon",
-        colorFilter = if (enabled) ColorFilter.tint(White90) else ColorFilter.tint(Grey50)
+        colorFilter = if (enabled.value) ColorFilter.tint(White90) else ColorFilter.tint(Grey50)
       )
     }
   }
 }
 
 @Composable
-fun RenderScreen(state: MainActivityState, modifier: Modifier) {
+fun RenderScreen(state: MainActivityState, coroutineScope: CoroutineScope, modifier: Modifier) {
   Column(
     modifier = Modifier
       .fillMaxSize()
@@ -151,42 +149,18 @@ fun RenderScreen(state: MainActivityState, modifier: Modifier) {
       state = state
     )
     Spacer(Modifier.height(40.dp))
-    RenderBreakContinueButton(state)
+    RenderBreakContinueButton(state, coroutineScope)
   }
 }
 
 @Composable
 fun RenderBackground(state: MainActivityState, numBars: Int) {
   val numBarsTimes2 = numBars * 2
-  var hurryUpBarColor by remember { mutableStateOf(Grey90) }
-  var shift by remember { mutableFloatStateOf(0.0F) }
-  var shiftFactor by remember { mutableFloatStateOf(0.0F) }
-  var previousShift by remember { mutableFloatStateOf(0.0F) }
-  var previousTotal by remember { mutableFloatStateOf(0.0F) }
-
-  state.timer.eventHandler.clearSubscribers("RenderBackground")
-  state.timer.incrementHandler.clearSubscribers("RenderBackground")
-  state.eventHandler.clearSubscribers("RenderBackground")
-
-  state.timer.eventHandler.subscribe(TimerEvent.TICK, tag = "RenderBackground") {
-    shift = state.timer.elapsedMilliIncrements() / 1000F
-  }
-  state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "RenderBackground") {
-    shiftFactor = state.timer.numResumes.toFloat()
-  }
-  state.eventHandler.subscribe(StateEvent.BREAK, tag = "RenderBackground") {
-    previousTotal += (shift - previousShift) * shiftFactor
-    previousShift = shift
-  }
-  state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderBackground") {
-    shift = 0.0F
-    shiftFactor = 0.0F
-    previousShift = 0.0F
-    hurryUpBarColor = Grey90
-  }
-  state.eventHandler.subscribe(StateEvent.HURRY_UP, tag = "RenderBackground") {
-    hurryUpBarColor = DarkRed90
-  }
+  val hurryUpBarColor = state.isHurryUp.map { if (it) DarkRed90 else Grey90 }.collectAsState(Grey90)
+  val shift = state.backgroundViewModel.shift.collectAsState(0F)
+  val shiftFactor = state.backgroundViewModel.shiftFactor.collectAsState(0F)
+  val previousShift = state.backgroundViewModel.previousShift.collectAsState(0F)
+  val previousTotal = state.backgroundViewModel.previousTotal.collectAsState(0F)
 
   Canvas(modifier = Modifier.fillMaxSize()) {
     val w = size.width
@@ -196,12 +170,12 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
     val hypotenuse = hypot(h, w)
     rotate(degrees = -45F) {
       val barWidth = hypotenuse / numBarsTimes2
-      val xShift = previousTotal + (shift - previousShift) * shiftFactor
+      val xShift = previousTotal.value + (shift.value - previousShift.value) * shiftFactor.value
       for (i in 0..numBarsTimes2) {
         val xOffset =
           ((i * 2 + xShift) % numBarsTimes2) * barWidth - threeQuartersW
         drawRect(
-          color = if (i % 2 == 0) hurryUpBarColor else Grey90,
+          color = if (i % 2 == 0) hurryUpBarColor.value else Grey90,
           topLeft = Offset(x = xOffset, y = -halfW),
           size = Size(barWidth, h + w)
         )
@@ -216,41 +190,15 @@ fun RenderTimer(state: MainActivityState) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    var renderedTime by remember { mutableStateOf(state.timer.toString()) }
-    var timeColor by remember { mutableStateOf(Grey50) }
-
-    state.timer.eventHandler.clearSubscribers("RenderTimer")
-    state.timer.incrementHandler.clearSubscribers("RenderTimer")
-    state.transitionTimer.eventHandler.clearSubscribers("RenderTimer")
-    state.eventHandler.clearSubscribers("RenderTimer")
-
-    state.timer.eventHandler.subscribe(TimerEvent.SECOND, tag = "RenderTimer") {
-      renderedTime = state.timer.toString()
-    }
-    state.transitionTimer.eventHandler.subscribe(TimerEvent.SECOND, tag = "RenderTimer") {
-      renderedTime = state.transitionTimer.toString()
-    }
-    state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderTimer") {
-      renderedTime = state.timer.toString()
-      timeColor = Grey50
-    }
-    state.eventHandler.subscribe(StateEvent.HURRY_UP) {
-      timeColor = Red90
-    }
-    state.eventHandler.subscribe(
-      StateEvent.TRANSITION_TO_START,
-      StateEvent.TRANSITION_TO_CONTINUE, tag = "RenderTimer"
-    ) {
-      timeColor = if (state.isHurryUp()) Red90 else Green90
-      renderedTime = state.transitionTimer.toString()
-    }
-    state.eventHandler.subscribe(StateEvent.START, StateEvent.CONTINUE, tag = "RenderTimer") {
-      timeColor = if (state.isHurryUp()) Red90 else White90
-      renderedTime = state.timer.toString()
-    }
-    state.eventHandler.subscribe(StateEvent.BREAK, tag = "RenderTimer") {
-      timeColor = Grey50
-    }
+    val renderedTime = state.timerText.collectAsState("")
+    val timeColor = state.runState.map {
+      when (it) {
+        RunState.PAUSED -> Grey50
+        RunState.RUNNING -> Green90
+        RunState.HURRY_UP -> Red90
+        RunState.COMPLETE -> Green90
+      }
+    }.collectAsState(Grey50)
 
     val timerFont = TextStyle(
       fontFamily = mPlus1Code,
@@ -263,17 +211,17 @@ fun RenderTimer(state: MainActivityState) {
 
     Box {
       Text(
-        text = renderedTime,
+        text = renderedTime.value,
         modifier = Modifier
           .semantics { invisibleToUser() }
           .padding(5.dp),
         style = timerFont.copy(drawStyle = Stroke(width = 30F), color = Color.Black)
       )
       Text(
-        text = renderedTime,
+        text = renderedTime.value,
         modifier = Modifier.padding(5.dp),
         style = timerFont,
-        color = timeColor
+        color = timeColor.value
       )
     }
   }
@@ -282,67 +230,40 @@ fun RenderTimer(state: MainActivityState) {
 @Composable
 fun RenderBreakContinueButton(
   state: MainActivityState,
+  coroutineScope: CoroutineScope,
   modifier: Modifier = Modifier,
   initialState: MainButtonState = MainButtonState.START,
 ) {
-  state.eventHandler.clearSubscribers("RenderBreakContinueButton")
+  val buttonState = state.buttonState.collectAsState(initialState)
+  val buttonClickableFlow =
+    state.isReady.combine(state.buttonEnabled) { ready, enabled -> ready && enabled }
+  val buttonClickable = buttonClickableFlow.collectAsState(false)
 
-  var buttonState by remember { mutableStateOf(initialState) }
-  var textColor by remember { mutableStateOf(Color.Black) }
-  var backgroundColor by remember { mutableStateOf(Color.Black) }
-  var borderColor by remember { mutableStateOf(Color.Black) }
+  val isBreakFlow = state.buttonState.map { it == MainButtonState.BREAK }
 
-  var buttonReady by remember { mutableStateOf(false) }
-  var buttonEnabled by remember { mutableStateOf(true) }
+  val textColor = isBreakFlow.combine(buttonClickableFlow)
+  { isBreak, isClickable ->
+    if (isBreak && isClickable) Color.Black
+    else if (isBreak) Grey90
+    else if (isClickable) Green90
+    else Grey50
+  }.collectAsState(Color.Black)
 
-  val buttonClickable = { buttonReady && buttonEnabled }
+  val backgroundColor = isBreakFlow.combine(buttonClickableFlow)
+  { isBreak, isClickable ->
+    if (isBreak && isClickable) White90
+    else if (isBreak) Grey50
+    else if (isClickable) Color.Black
+    else Grey90
+  }.collectAsState(White90)
 
-  fun updateColors() {
-    val isBreak = buttonState == MainButtonState.BREAK
-    val isButtonClickable = buttonClickable()
-    if (isBreak) {
-      textColor = if(isButtonClickable) Color.Black else Grey90
-      backgroundColor = if(isButtonClickable) White90 else Grey50
-      borderColor = if(isButtonClickable) White90 else Grey50
-    } else {
-      textColor =  if(isButtonClickable) Green90 else Grey50
-      backgroundColor = if(isButtonClickable) Color.Black else Grey90
-      borderColor = if(isButtonClickable) Green90 else Grey50
-    }
-  }
-
-  state.eventHandler.subscribe(
-    StateEvent.MUSIC_PREPARED,
-    tag = "RenderBreakContinueButton"
-  ) {
-    buttonReady = true
-    updateColors()
-  }
-  updateColors()
-
-  state.eventHandler.subscribe(
-    StateEvent.TRANSITION_TO_START,
-    StateEvent.TRANSITION_TO_CONTINUE,
-    tag = "RenderBreakContinueButton"
-  ) {
-    buttonEnabled = false
-    updateColors()
-  }
-  state.eventHandler.subscribe(
-    StateEvent.START,
-    StateEvent.BREAK,
-    StateEvent.CONTINUE,
-    tag = "RenderBreakContinueButton"
-  ) {
-    buttonState = buttonState.toggle()
-    buttonEnabled = true
-    updateColors()
-  }
-  state.eventHandler.subscribe(StateEvent.RESET, tag = "RenderBreakContinueButton") {
-    buttonState = initialState
-    buttonEnabled = true
-    updateColors()
-  }
+  val borderColor = isBreakFlow.combine(buttonClickableFlow)
+  { isBreak, isClickable ->
+    if (isBreak && isClickable) White90
+    else if (isBreak) Grey50
+    else if (isClickable) Green90
+    else Grey50
+  }.collectAsState(White90)
 
   val buttonFont = TextStyle(
     fontFamily = sixtyFour,
@@ -362,119 +283,22 @@ fun RenderBreakContinueButton(
     contentAlignment = Alignment.Center
   ) {
     Button(
-      onClick = { state.action(buttonState) },
-      enabled = buttonClickable(),
+      onClick = {
+        coroutineScope.launch {
+          state.clickButton()
+        }
+      },
+      enabled = buttonClickable.value,
       border = BorderStroke(
-        width = borderThickness, color = borderColor
+        width = borderThickness, color = borderColor.value
       ),
-      colors = ButtonColors(backgroundColor, textColor, Grey90, textColor),
+      colors = ButtonColors(backgroundColor.value, textColor.value, Grey90, textColor.value),
       shape = RoundedCornerShape(borderThickness),
       modifier = modifier.padding(borderThickness)
     ) {
       Text(
-        buttonState.name, style = buttonFont, modifier = modifier.padding(0.dp, 15.dp)
+        buttonState.value.name, style = buttonFont, modifier = modifier.padding(0.dp, 15.dp)
       )
     }
   }
 }
-
-//
-// import android.os.Bundle
-// import androidx.activity.ComponentActivity
-// import androidx.activity.compose.setContent
-// import androidx.activity.viewModels
-// import androidx.compose.foundation.layout.*
-// import androidx.compose.material3.*
-// import androidx.compose.runtime.Composable
-// import androidx.compose.runtime.collectAsState
-// import androidx.compose.runtime.getValue
-// import androidx.compose.ui.Alignment
-// import androidx.compose.ui.Modifier
-// import androidx.compose.ui.graphics.Color
-// import androidx.compose.ui.text.font.FontWeight
-// import androidx.compose.ui.tooling.preview.Preview
-// import androidx.compose.ui.unit.dp
-// import androidx.compose.ui.unit.sp
-// import com.example.timerexample.ui.theme.TimerExampleTheme // Assuming a theme file exists
-//
-// class MainActivity : ComponentActivity() {
-//
-//   // Lazily initialize the ViewModel
-//   private val timerViewModel: TimerViewModel by viewModels()
-//
-//   override fun onCreate(savedInstanceState: Bundle?) {
-//     super.onCreate(savedInstanceState)
-//     setContent {
-//       // Assuming you have a theme wrapper, e.g., from the Compose template
-//       TimerExampleTheme {
-//         Surface(
-//           modifier = Modifier.fillMaxSize(),
-//           color = Color(0xFF121212) // Dark background color
-//         ) {
-//           TimerScreen(viewModel = timerViewModel)
-//         }
-//       }
-//     }
-//   }
-// }
-//
-// @Composable
-// fun TimerScreen(viewModel: TimerViewModel) {
-//   // Collect the StateFlows from the ViewModel as Compose State
-//   val time by viewModel.time.collectAsState()
-//   val isRunning by viewModel.isRunning.collectAsState()
-//
-//   Column(
-//     modifier = Modifier.fillMaxSize(),
-//     horizontalAlignment = Alignment.CenterHorizontally,
-//     verticalArrangement = Arrangement.Center
-//   ) {
-//     // Timer Text Display
-//     Text(
-//       text = viewModel.formatTime(time),
-//       fontSize = 100.sp,
-//       fontWeight = FontWeight.Light,
-//       color = Color.White
-//     )
-//
-//     Spacer(modifier = Modifier.height(48.dp))
-//
-//     // Control Buttons
-//     Row(
-//       horizontalArrangement = Arrangement.spacedBy(16.dp)
-//     ) {
-//       // Show Start or Pause button based on the isRunning state
-//       if (isRunning) {
-//         Button(
-//           onClick = { viewModel.pauseTimer() },
-//           colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)) // Red for Pause
-//         ) {
-//           Text(text = "Pause", fontSize = 16.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-//         }
-//       } else {
-//         Button(
-//           onClick = { viewModel.startTimer() },
-//           colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)) // Green for Start
-//         ) {
-//           Text(text = "Start", fontSize = 16.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-//         }
-//       }
-//
-//       // Reset Button
-//       Button(
-//         onClick = { viewModel.resetTimer() },
-//         colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-//       ) {
-//         Text(text = "Reset", fontSize = 16.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-//       }
-//     }
-//   }
-// }
-//
-// @Preview(showBackground = true, backgroundColor = 0xFF121212)
-// @Composable
-// fun DefaultPreview() {
-//   TimerExampleTheme {
-//     TimerScreen(viewModel = TimerViewModel())
-//   }
-// }
