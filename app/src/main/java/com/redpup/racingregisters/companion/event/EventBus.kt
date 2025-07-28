@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.take
  * that event occurs.
  */
 class EventBus<E : Any> {
-  internal val events = MutableSharedFlow<Tagged<E>>(replay = 0)
+  internal val events = MutableSharedFlow<Tagged<E>>(replay = 0, extraBufferCapacity = 10)
 
   /** Events [event] with [tag] through the bus. */
   suspend fun emit(event: E, tag: String = "") {

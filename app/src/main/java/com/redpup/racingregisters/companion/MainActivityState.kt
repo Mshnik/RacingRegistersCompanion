@@ -3,10 +3,13 @@ package com.redpup.racingregisters.companion
 import androidx.lifecycle.ViewModel
 import com.redpup.racingregisters.companion.timer.Event as TimerEvent
 import com.redpup.racingregisters.companion.timer.TimerViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 /** State of the main action button on the main activity. */
 enum class MainButtonState {
@@ -50,6 +53,7 @@ class MainActivityState(
   val hurryUp: Int,
   val transitionTimer: TimerViewModel,
   val backgroundViewModel: BackgroundViewModel = BackgroundViewModel(timer),
+  val coroutineScope : CoroutineScope
   // val music: BackgroundMusic,
 ) : ViewModel() {
   /** Whether the top reset button is currently enabled. */
@@ -110,12 +114,16 @@ class MainActivityState(
   private suspend fun transition(execute: suspend () -> Unit) {
     buttonEnabled.value = false
     transitionTimer.reset()
-    transitionTimer.eventBus.subscribe(
-      TimerEvent.FINISH,
-      tag = "Transition",
-      limit = 1
-    ) { execute() }
+    coroutineScope.launch {
+      transitionTimer.eventBus.subscribe(
+        TimerEvent.FINISH,
+        limit = 1
+      ) {
+        execute()
+      }
+    }
     transitionTimer.start()
+    isRunning.value = true
   }
 
   /** Executes the start action, after transition. */

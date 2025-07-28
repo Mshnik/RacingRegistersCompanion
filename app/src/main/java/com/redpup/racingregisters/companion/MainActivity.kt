@@ -84,6 +84,7 @@ class MainActivity : ComponentActivity() {
       TimerViewModel(timerDuration),
       hurryUpTime,
       TimerViewModel(transitionDuration, completeAtIncrements = 1, completionMessage = "GO!"),
+      coroutineScope = lifecycleScope
       // BackgroundMusic(baseContext)
     )
 
