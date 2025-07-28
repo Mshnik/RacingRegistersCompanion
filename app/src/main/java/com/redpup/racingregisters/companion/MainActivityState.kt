@@ -132,6 +132,7 @@ class MainActivityState(
     resetButtonEnabled.value = true
     buttonEnabled.value = true
     isRunning.value = true
+    buttonState.value = MainButtonState.BREAK
   }
 
   /** Executes the break action, (maybe) after transition. */
@@ -140,6 +141,7 @@ class MainActivityState(
     backgroundViewModel.accumulate()
     buttonEnabled.value = true
     isRunning.value = false
+    buttonState.value = MainButtonState.CONTINUE
   }
 
   /** Executes the continue action, after transition. */
@@ -147,6 +149,7 @@ class MainActivityState(
     timer.start()
     buttonEnabled.value = true
     isRunning.value = true
+    buttonState.value = MainButtonState.BREAK
   }
 
   /** Invoked when the "Reset" button is pushed. */
