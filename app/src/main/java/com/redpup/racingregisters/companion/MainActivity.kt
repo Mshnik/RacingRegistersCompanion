@@ -163,7 +163,7 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
   val previousShift = state.backgroundViewModel.previousShift.collectAsState(0F)
   val previousTotal = state.backgroundViewModel.previousTotal.collectAsState(0F)
 
-  Canvas(modifier = Modifier.fillMaxSize()) {
+  Canvas(modifier = Modifier.fillMaxSize().background(Color.Black)) {
     val w = size.width
     val halfW = w * 0.5F
     val threeQuartersW = w * 0.75F
