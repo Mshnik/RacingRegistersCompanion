@@ -8,6 +8,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -53,8 +54,9 @@ class MainActivityState(
   val hurryUp: Int,
   val transitionTimer: TimerViewModel,
   val backgroundViewModel: BackgroundViewModel = BackgroundViewModel(timer),
-  val coroutineScope : CoroutineScope
-  // val music: BackgroundMusic,
+  val music: BackgroundMusic,
+  val soundEffects: SoundEffects,
+  val coroutineScope: CoroutineScope,
 ) : ViewModel() {
   /** Whether the top reset button is currently enabled. */
   val resetButtonEnabled = MutableStateFlow(true)
@@ -99,12 +101,14 @@ class MainActivityState(
   suspend fun clickButton() {
     when (buttonState.value) {
       MainButtonState.START -> {
+        soundEffects.beginEffect.start()
         transition { executeStart() }
       }
 
       MainButtonState.BREAK -> executeBreak()
 
       MainButtonState.CONTINUE -> {
+        music.startTransitionIn()
         transition { executeContinue() }
       }
     }
@@ -128,6 +132,7 @@ class MainActivityState(
 
   /** Executes the start action, after transition. */
   private suspend fun executeStart() {
+    music.start(this)
     timer.start()
     resetButtonEnabled.value = true
     buttonEnabled.value = true
@@ -137,6 +142,8 @@ class MainActivityState(
 
   /** Executes the break action, (maybe) after transition. */
   private suspend fun executeBreak() {
+    soundEffects.breakEffect.start()
+    music.startBreak(this)
     timer.pause()
     backgroundViewModel.accumulate()
     buttonEnabled.value = true
@@ -146,6 +153,7 @@ class MainActivityState(
 
   /** Executes the continue action, after transition. */
   private suspend fun executeContinue() {
+    music.startContinue(this)
     timer.start()
     buttonEnabled.value = true
     isRunning.value = true
@@ -154,6 +162,8 @@ class MainActivityState(
 
   /** Invoked when the "Reset" button is pushed. */
   fun reset() {
+    scaleTransitionTimerToMusic(soundEffects.beginEffect.duration)
+    music.reset(this)
     timer.reset()
     transitionTimer.reset()
     buttonEnabled.value = true
@@ -161,69 +171,39 @@ class MainActivityState(
     isRunning.value = false
   }
 
-  // /** Sets up music with event handling. */
-  // suspend fun setupMusic(context: Context) {
-  //   music.setVolume(context.resources.getFloat(R.dimen.music_volume_master))
-  //
-  //   eventBus.subscribe(Event.TRANSITION_TO_CONTINUE, tag = "setupMusic") {
-  //     music.startTransitionIn()
-  //   }
-  //   eventBus.subscribe(Event.START, tag = "setupMusic") {
-  //     music.start(this)
-  //   }
-  //   eventBus.subscribe(Event.CONTINUE, tag = "setupMusic") {
-  //     music.startContinue(this)
-  //   }
-  //   eventBus.subscribe(Event.BREAK, tag = "setupMusic") {
-  //     music.startBreak(this)
-  //   }
-  //   timer.eventBus.subscribe(TimerEvent.FINISH, tag = "setupMusic") {
-  //     music.reset(this)
-  //   }
-  //   eventBus.subscribe(Event.HURRY_UP, tag = "setupMusic") {
-  //     music.startHurryUp()
-  //   }
-  //
-  //   music.prepareAsync { eventBus.emit(Event.MUSIC_PREPARED) }
-  // }
+  /** Sets up music with event handling. */
+  fun setupMusic(masterVolume: Float) {
+    music.setVolume(masterVolume)
+    music.prepareAsync { isReady.value = true }
 
-  // /** Sets up sound with event handling. */
-  // suspend fun setupSound(context: Context) {
-  //   val beginEffect = MediaPlayer.create(context, R.raw.effect_begin)
-  //   val resumeEffect = MediaPlayer.create(context, R.raw.effect_start)
-  //   val breakEffect = MediaPlayer.create(context, R.raw.effect_break)
-  //
-  //   scaleTransitionTimerToMusic(beginEffect.duration)
-  //   eventBus.subscribe(Event.RESET, tag = "setupSound") {
-  //     scaleTransitionTimerToMusic(beginEffect.duration)
-  //   }
-  //
-  //   eventBus.subscribe(Event.TRANSITION_TO_START, tag = "setupSound") {
-  //     beginEffect.start()
-  //   }
-  //   transitionTimer.eventBus.subscribe(TimerEvent.COMPLETE, tag = "setupSound") {
-  //     resumeEffect.start()
-  //   }
-  //   eventBus.subscribe(Event.BREAK, tag = "setupSound") {
-  //     breakEffect.start()
-  //   }
-  //
-  //   val countdownEffects = mapOf(
-  //     0 to R.raw.effect_finish,
-  //     1 to R.raw.effect_countdown_1,
-  //     2 to R.raw.effect_countdown_2,
-  //     3 to R.raw.effect_countdown_3,
-  //     4 to R.raw.effect_countdown_4,
-  //     5 to R.raw.effect_countdown_5,
-  //     6 to R.raw.effect_countdown_6,
-  //     7 to R.raw.effect_countdown_7,
-  //     8 to R.raw.effect_countdown_8,
-  //     9 to R.raw.effect_countdown_9,
-  //     10 to R.raw.effect_countdown_10
-  //   ).mapValues { MediaPlayer.create(context, it.value) }
-  //
-  //   countdownEffects.forEach { timer.incrementBus.subscribe(it.key) { it.value.start() } }
-  // }
+    coroutineScope.launch {
+      isHurryUp
+        .filter { it }
+        .collect {
+          music.startHurryUp()
+        }
+    }
+  }
+
+  /** Sets up sound with event handling. */
+  fun setupSound() {
+    scaleTransitionTimerToMusic(soundEffects.beginEffect.duration)
+    coroutineScope.launch {
+      transitionTimer.isComplete
+        .filter { it }
+        .collect {
+          soundEffects.resumeEffect.start()
+        }
+    }
+
+    coroutineScope.launch {
+      timer.remainingIncrements
+        .filter { soundEffects.countdownEffects.containsKey(it) }
+        .collect {
+          soundEffects.countdownEffects[it]!!.start()
+        }
+    }
+  }
 
   /**
    * Scales the transition timer in state to match the given duration in millis,

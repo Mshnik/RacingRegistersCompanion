@@ -60,6 +60,14 @@ class TimerViewModel(
   val remainingIncrements: Flow<Int> = this.ticks.map { remainingIncrements(it) }
     .distinctUntilChanged()
 
+  /** Whether or not this timer is "complete" (which is different from finished). */
+  private fun isComplete(increments: Int = remainingIncrements()): Boolean {
+    return increments <= completeAtIncrements
+  }
+
+  val isComplete: Flow<Boolean> =
+    this.remainingIncrements.map { isComplete(it) }.distinctUntilChanged()
+
   /** Scales the speed of this timer to match [durationMillis]. */
   fun scaleSpeed(durationMillis: Int) {
     val timerIntervalDuration =

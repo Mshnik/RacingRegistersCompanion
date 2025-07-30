@@ -7,7 +7,6 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -31,13 +30,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -84,9 +77,12 @@ class MainActivity : ComponentActivity() {
       TimerViewModel(timerDuration),
       hurryUpTime,
       TimerViewModel(transitionDuration, completeAtIncrements = 1, completionMessage = "GO!"),
+      music = BackgroundMusic(baseContext),
+      soundEffects = SoundEffects(baseContext),
       coroutineScope = lifecycleScope
-      // BackgroundMusic(baseContext)
     )
+    state.setupMusic(baseContext.resources.getFloat(R.dimen.music_volume_master))
+    state.setupSound()
 
     val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
     enableEdgeToEdge()
@@ -163,7 +159,11 @@ fun RenderBackground(state: MainActivityState, numBars: Int) {
   val previousShift = state.backgroundViewModel.previousShift.collectAsState(0F)
   val previousTotal = state.backgroundViewModel.previousTotal.collectAsState(0F)
 
-  Canvas(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+  Canvas(
+    modifier = Modifier
+      .fillMaxSize()
+      .background(Color.Black)
+  ) {
     val w = size.width
     val halfW = w * 0.5F
     val threeQuartersW = w * 0.75F

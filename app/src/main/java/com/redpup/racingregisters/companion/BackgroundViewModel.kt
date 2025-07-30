@@ -1,6 +1,5 @@
 package com.redpup.racingregisters.companion
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.redpup.racingregisters.companion.timer.TimerViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
