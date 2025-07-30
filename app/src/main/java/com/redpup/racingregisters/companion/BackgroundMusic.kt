@@ -9,6 +9,7 @@ import com.redpup.racingregisters.companion.sound.LoopMediaPlayer
 import com.redpup.racingregisters.companion.sound.MultiTrackMediaPlayer
 import com.redpup.racingregisters.companion.sound.ProgressionMediaPlayer
 import kotlin.math.pow
+import kotlinx.coroutines.flow.first
 
 /** Returns a progression media player of the background music. */
 private fun mainMusic(context: Context) =
@@ -80,6 +81,7 @@ class BackgroundMusic(context: Context) {
     // Skip the first track.
     .advanceAndCap()
   private val breakMusic = breakMusic(context)
+
   // TODO - Have to also have transition back in music in C# post hurry up.
   private val transitionMusic = transitionMusic(context)
   private val transitionToHurryUpMusic = transitionToHurryUpMusic(context)
@@ -111,7 +113,7 @@ class BackgroundMusic(context: Context) {
   }
 
   /** Starts a break, transitioning to break music. */
-  fun startBreak(state: MainActivityState) {
+  suspend fun startBreak(state: MainActivityState) {
     mainMusic.current().softReset()
     hurryUpMusic.current().softReset()
     transitionToHurryUpMusic.current().softReset()
@@ -123,11 +125,11 @@ class BackgroundMusic(context: Context) {
     transitionToHurryUpMusic.advanceAndCap()
 
     transitionMusic.current().softReset()
-    // if (state.isHurryUp()) {
-    //   transitionMusic.setupLeaveTransition(hurryUpMusic)
-    // } else {
-    //   transitionMusic.setupLeaveTransition(mainMusic)
-    // }
+    if (state.isHurryUp.first()) {
+      transitionMusic.setupLeaveTransition(hurryUpMusic)
+    } else {
+      transitionMusic.setupLeaveTransition(mainMusic)
+    }
   }
 
   /** Begins a transition back to main game music. */
