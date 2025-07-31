@@ -166,6 +166,7 @@ class MainActivityState(
     music.reset(this)
     timer.reset()
     transitionTimer.reset()
+    buttonState.value = MainButtonState.START
     buttonEnabled.value = true
     resetButtonEnabled.value = false
     isRunning.value = false

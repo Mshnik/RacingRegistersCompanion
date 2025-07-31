@@ -2,11 +2,10 @@ package com.redpup.racingregisters.companion
 
 import android.content.Context
 import android.media.MediaPlayer
-import android.provider.MediaStore.Audio.Media
 
 
-/** Wrapper of different sound effects that can be made in the game.
- *
+/**
+ * Wrapper of different sound effects that can be made in the game.
  */
 class SoundEffects(context: Context) {
   val beginEffect: MediaPlayer = MediaPlayer.create(context, R.raw.effect_begin)
