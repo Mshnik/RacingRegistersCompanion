@@ -252,14 +252,17 @@ fun GameScreen(
   navController: NavController,
   lifecycleScope: CoroutineScope,
 ) {
-  Scaffold(topBar = { RenderTopBar(state) }) { innerPadding ->
+  Scaffold(topBar = { RenderTopBar(state, navController) }) { innerPadding ->
     RenderBackground(state)
     RenderScreen(state, lifecycleScope, Modifier.padding(innerPadding))
   }
 }
 
 @Composable
-fun RenderTopBar(state: GameState) {
+fun RenderTopBar(
+  state: GameState,
+  navController: NavController,
+) {
   val size = 50.dp
   val enabled = state.resetButtonEnabled.collectAsState()
 
@@ -268,8 +271,28 @@ fun RenderTopBar(state: GameState) {
       .fillMaxWidth()
       .offset(0.dp, 40.dp)
       .padding(20.dp),
-    horizontalArrangement = Arrangement.End
+    horizontalArrangement = Arrangement.SpaceBetween
   ) {
+    Button(
+      onClick = { navController.navigateUp() },
+      enabled = true,
+      colors = ButtonColors(
+        Color.Black,
+        Color.Black,
+        Color.Black,
+        Color.Black
+      ),
+      shape = CircleShape,
+      border = BorderStroke(width = 3.dp, color = Grey90),
+      modifier = Modifier.size(size),
+      contentPadding = PaddingValues(size * 0.2F)
+    ) {
+      Image(
+        painter = painterResource(R.drawable.back),
+        contentDescription = "Back icon",
+        colorFilter = ColorFilter.tint(White90)
+      )
+    }
     Button(
       onClick = { state.reset() },
       enabled = enabled.value,
