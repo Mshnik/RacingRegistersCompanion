@@ -18,6 +18,7 @@ class TimerViewModel(
   internal var ticksPerIncrement: Int = 100,
   internal val completeAtIncrements: Int = 0,
   internal val completionMessage: String = "DONE",
+  internal var countDown: Boolean = initialIncrements > 0,
 ) : ViewModel() {
 
   init {
@@ -92,7 +93,7 @@ class TimerViewModel(
    * Starts the timer. If the timer is already running, this does nothing.
    */
   suspend fun start() {
-    if (isRunning.value || remainingIncrements() == 0) {
+    if (isRunning.value || (countDown && remainingIncrements() == 0)) {
       return
     }
 
@@ -101,7 +102,7 @@ class TimerViewModel(
     numResumes.value++
 
     timerJob = viewModelScope.launch {
-      while (remainingIncrements() > 0 && isRunning.value) {
+      while ((!countDown || remainingIncrements() > 0) && isRunning.value) {
         delay(delay)
         tick()
       }
@@ -144,16 +145,18 @@ class TimerViewModel(
     if (ticks.value % ticksPerIncrement == 0) {
       eventBus.emit(Event.SECOND)
 
-      val remainingIncrements = remainingIncrements()
-      incrementBus.emit(remainingIncrements)
+      if (countDown) {
+        val remainingIncrements = remainingIncrements()
+        incrementBus.emit(remainingIncrements)
 
-      if (remainingIncrements == completeAtIncrements) {
-        eventBus.emit(Event.COMPLETE)
-      }
+        if (remainingIncrements == completeAtIncrements) {
+          eventBus.emit(Event.COMPLETE)
+        }
 
-      if (remainingIncrements == 0) {
-        pause()
-        eventBus.emit(Event.FINISH)
+        if (remainingIncrements == 0) {
+          pause()
+          eventBus.emit(Event.FINISH)
+        }
       }
     }
   }

@@ -26,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -68,27 +67,6 @@ enum class MainButtonState {
   START,
   BREAK,
   CONTINUE;
-
-  /** Toggles this state to the next state. Break -> Continue, Anything else -> Break. */
-  fun toggle(): MainButtonState {
-    return if (this == BREAK) {
-      CONTINUE
-    } else {
-      BREAK
-    }
-  }
-}
-
-/** Events that can be fired on the main activity state. */
-enum class Event {
-  MUSIC_PREPARED,
-  TRANSITION_TO_START,
-  START,
-  BREAK,
-  TRANSITION_TO_CONTINUE,
-  CONTINUE,
-  HURRY_UP,
-  RESET,
 }
 
 /** Possible states of the timer. */
@@ -272,7 +250,7 @@ class GameState(
 fun GameScreen(
   state: GameState,
   navController: NavController,
-  lifecycleScope : CoroutineScope
+  lifecycleScope: CoroutineScope,
 ) {
   Scaffold(topBar = { RenderTopBar(state) }) { innerPadding ->
     RenderBackground(state)
@@ -367,7 +345,6 @@ fun RenderBackground(state: GameState) {
   }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun RenderTimer(state: GameState) {
   Row(

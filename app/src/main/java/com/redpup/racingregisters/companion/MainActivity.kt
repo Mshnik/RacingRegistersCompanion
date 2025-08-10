@@ -30,7 +30,8 @@ class MainActivity : ComponentActivity() {
     val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
 
     val homeState = HomeState(
-      // TimerViewModel(timerDuration),
+      TimerViewModel(0, countDown = false),
+      coroutineScope = lifecycleScope,
       numBackgroundBars = numBackgroundBars
     )
 

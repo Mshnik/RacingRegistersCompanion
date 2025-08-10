@@ -5,15 +5,12 @@ import com.google.common.truth.Truth.assertThat
 import com.redpup.racingregisters.companion.event.tagged
 import com.redpup.racingregisters.companion.event.testing.FakeEventBus
 import com.redpup.racingregisters.companion.testing.MainDispatcherRule
-import com.redpup.racingregisters.companion.testing.asUnit
-import com.redpup.racingregisters.companion.testing.pass
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.RuleChain
 
 class TimerViewModelTest {
   companion object {
@@ -161,6 +158,11 @@ class TimerViewModelTest {
       assertThat(awaitItem()).isEqualTo(1)
       assertThat(awaitItem()).isEqualTo(2)
     }
+
+    assertThat(fakeIncrementBus.consumeResults()).containsAllOf(
+      (DURATION_INCREMENTS - 1).tagged(),
+      (DURATION_INCREMENTS - 2).tagged(),
+    ).inOrder()
   }
 
   @Test
