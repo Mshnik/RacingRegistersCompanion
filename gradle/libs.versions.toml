@@ -16,16 +16,19 @@ activityCompose = "1.8.0"
 composeBom = "2024.04.01"
 junitJupiter = "5.8.1"
 mockk = "1.13.16"
+navigationCompose = "2.9.3"
 protobufJavalite = "3.20.1"
 protobufKotlinLite = "3.20.1"
 truth = "0.40"
 compiler = "3.2.0-alpha11"
 turbine = "0.7.0"
+navigationComposeJvmstubs = "2.9.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreferences" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 appcompat-v7 = { module = "com.android.support:appcompat-v7", version.ref = "appcompatV7" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" }
@@ -52,6 +55,7 @@ protobuf-kotlin-lite = { module = "com.google.protobuf:protobuf-kotlin-lite", ve
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 androidx-compiler = { group = "androidx.databinding", name = "compiler", version.ref = "compiler" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+androidx-navigation-compose-jvmstubs = { group = "androidx.navigation", name = "navigation-compose-jvmstubs", version.ref = "navigationComposeJvmstubs" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

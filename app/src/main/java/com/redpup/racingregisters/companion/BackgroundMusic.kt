@@ -107,13 +107,13 @@ class BackgroundMusic(context: Context) {
   }
 
   /** Starts main game music. */
-  fun start(state: MainActivityState) {
+  fun start(state: GameState) {
     state.scaleTransitionTimerToMusic(transitionMusic.duration())
     mainMusic.start()
   }
 
   /** Starts a break, transitioning to break music. */
-  suspend fun startBreak(state: MainActivityState) {
+  suspend fun startBreak(state: GameState) {
     mainMusic.current().softReset()
     hurryUpMusic.current().softReset()
     transitionToHurryUpMusic.current().softReset()
@@ -140,7 +140,7 @@ class BackgroundMusic(context: Context) {
   }
 
   /** Continues with main game music. */
-  fun startContinue(state: MainActivityState) {
+  fun startContinue(state: GameState) {
     if (transitionMusic.isPlaying()) {
       transitionMusic.pause()
     }
@@ -156,7 +156,7 @@ class BackgroundMusic(context: Context) {
   }
 
   /** Resets the game music back to th  e initial state. */
-  fun reset(state: MainActivityState) {
+  fun reset(state: GameState) {
     mainMusic.softReset()
     hurryUpMusic.softReset()
     breakMusic.softReset()
