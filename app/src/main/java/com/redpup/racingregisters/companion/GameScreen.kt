@@ -99,7 +99,7 @@ enum class RunState {
   COMPLETE
 }
 
-/** Wrapper on mutable state visually displayed in this activity.*/
+/** Wrapper on mutable state visually displayed in this screen.*/
 class GameState(
   val timer: TimerViewModel,
   val hurryUp: Int,

@@ -14,6 +14,7 @@ import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionThe
 
 /** Different screens in the app. */
 sealed class Screen(val route: String) {
+  data object Home : Screen("home")
   data object Game : Screen("game")
 }
 
@@ -28,7 +29,12 @@ class MainActivity : ComponentActivity() {
     val transitionDuration = baseContext.resources.getInteger(R.integer.transition_duration_seconds)
     val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
 
-    val state = GameState(
+    val homeState = HomeState(
+      // TimerViewModel(timerDuration),
+      numBackgroundBars = numBackgroundBars
+    )
+
+    val gameState = GameState(
       TimerViewModel(timerDuration),
       hurryUpTime,
       TimerViewModel(transitionDuration, completeAtIncrements = 1, completionMessage = "GO!"),
@@ -37,16 +43,19 @@ class MainActivity : ComponentActivity() {
       coroutineScope = lifecycleScope,
       numBackgroundBars = numBackgroundBars
     )
-    state.setupMusic(baseContext.resources.getFloat(R.dimen.music_volume_master))
-    state.setupSound()
+    gameState.setupMusic(baseContext.resources.getFloat(R.dimen.music_volume_master))
+    gameState.setupSound()
 
     enableEdgeToEdge()
     setContent {
       RacingRegistersCompanionTheme {
         val navController = rememberNavController()
-        NavHost(navController, startDestination = Screen.Game.route) {
+        NavHost(navController, startDestination = Screen.Home.route) {
+          composable(Screen.Home.route) {
+            HomeScreen(homeState, navController)
+          }
           composable(Screen.Game.route) {
-            GameScreen(state, navController, lifecycleScope)
+            GameScreen(gameState, navController, lifecycleScope)
           }
         }
       }
