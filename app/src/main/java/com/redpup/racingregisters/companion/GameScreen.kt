@@ -1,7 +1,5 @@
 package com.redpup.racingregisters.companion
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,11 +17,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -34,16 +30,16 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.redpup.racingregisters.companion.timer.Event
 import com.redpup.racingregisters.companion.timer.TimerViewModel
+import com.redpup.racingregisters.companion.ui.BackgroundViewModel
+import com.redpup.racingregisters.companion.ui.RenderBackground
 import com.redpup.racingregisters.companion.ui.RenderPrimaryButton
 import com.redpup.racingregisters.companion.ui.RenderSecondaryButton
-import com.redpup.racingregisters.companion.ui.theme.DarkRed90
 import com.redpup.racingregisters.companion.ui.theme.Green90
 import com.redpup.racingregisters.companion.ui.theme.Grey50
 import com.redpup.racingregisters.companion.ui.theme.Grey90
 import com.redpup.racingregisters.companion.ui.theme.Red90
 import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
-import kotlin.math.hypot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,11 +68,11 @@ class GameState(
   val timer: TimerViewModel,
   val hurryUp: Int,
   val transitionTimer: TimerViewModel,
-  val backgroundViewModel: BackgroundViewModel = BackgroundViewModel(timer),
   val music: BackgroundMusic,
   val soundEffects: SoundEffects,
   val coroutineScope: CoroutineScope,
-  val numBackgroundBars: Int,
+  numBackgroundBars: Int,
+  val backgroundViewModel: BackgroundViewModel = BackgroundViewModel(numBackgroundBars, timer),
 ) : ViewModel() {
   /** Whether the top reset button is currently enabled. */
   val resetButtonEnabled = MutableStateFlow(true)
@@ -243,7 +239,7 @@ fun GameScreen(
   lifecycleScope: CoroutineScope,
 ) {
   Scaffold(topBar = { RenderGameTopBar(state, navController) }) { innerPadding ->
-    RenderGameBackground(state)
+    RenderBackground(state.backgroundViewModel)
     RenderScreen(state, lifecycleScope, Modifier.padding(innerPadding))
   }
 }
@@ -253,8 +249,6 @@ fun RenderGameTopBar(
   state: GameState,
   navController: NavController,
 ) {
-  val enabled = state.resetButtonEnabled.collectAsState()
-
   Row(
     modifier = Modifier
       .fillMaxWidth()
@@ -271,7 +265,8 @@ fun RenderGameTopBar(
     }
     RenderSecondaryButton(
       R.drawable.reset,
-      "Reset Button"
+      "Reset Button",
+      enabled = state.resetButtonEnabled.collectAsState()
     ) {
       state.reset()
     }
@@ -292,41 +287,6 @@ fun RenderScreen(state: GameState, coroutineScope: CoroutineScope, modifier: Mod
     )
     Spacer(Modifier.height(40.dp))
     RenderBreakContinueButton(state, coroutineScope)
-  }
-}
-
-@Composable
-fun RenderGameBackground(state: GameState) {
-  val numBarsTimes2 = state.numBackgroundBars * 2
-  val hurryUpBarColor = state.isHurryUp.map { if (it) DarkRed90 else Grey90 }.collectAsState(Grey90)
-  val shift = state.backgroundViewModel.shift.collectAsState(0F)
-  val shiftFactor = state.backgroundViewModel.shiftFactor.collectAsState(0F)
-  val previousShift = state.backgroundViewModel.previousShift.collectAsState(0F)
-  val previousTotal = state.backgroundViewModel.previousTotal.collectAsState(0F)
-
-  Canvas(
-    modifier = Modifier
-      .fillMaxSize()
-      .background(Color.Black)
-  ) {
-    val w = size.width
-    val halfW = w * 0.5F
-    val threeQuartersW = w * 0.75F
-    val h = size.height
-    val hypotenuse = hypot(h, w)
-    rotate(degrees = -45F) {
-      val barWidth = hypotenuse / numBarsTimes2
-      val xShift = previousTotal.value + (shift.value - previousShift.value) * shiftFactor.value
-      for (i in 0..numBarsTimes2) {
-        val xOffset =
-          ((i * 2 + xShift) % numBarsTimes2) * barWidth - threeQuartersW
-        drawRect(
-          color = if (i % 2 == 0) hurryUpBarColor.value else Grey90,
-          topLeft = Offset(x = xOffset, y = -halfW),
-          size = Size(barWidth, h + w)
-        )
-      }
-    }
   }
 }
 

@@ -15,7 +15,6 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -113,14 +112,14 @@ fun RenderPrimaryButton(
 fun RenderSecondaryButton(
   @DrawableRes id: Int,
   description: String,
-  enabled: Boolean = true,
+  enabled: State<Boolean> = true.asState(),
   onClick: () -> Unit,
 ) {
   val size = 50.dp
 
   Button(
     onClick = onClick,
-    enabled = enabled,
+    enabled = enabled.value,
     colors = ButtonColors(
       Color.Black, Color.Black, Color.Black, Color.Black
     ),
@@ -131,7 +130,7 @@ fun RenderSecondaryButton(
   ) {
     Image(
       painter = painterResource(id),
-      contentDescription = "Back icon",
+      contentDescription = description,
       colorFilter = ColorFilter.tint(White90)
     )
   }
