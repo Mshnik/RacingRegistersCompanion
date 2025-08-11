@@ -39,6 +39,7 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.redpup.racingregisters.companion.timer.Event
 import com.redpup.racingregisters.companion.timer.TimerViewModel
+import com.redpup.racingregisters.companion.ui.RenderPrimaryButton
 import com.redpup.racingregisters.companion.ui.RenderSecondaryButton
 import com.redpup.racingregisters.companion.ui.theme.DarkRed90
 import com.redpup.racingregisters.companion.ui.theme.Green90
@@ -384,7 +385,7 @@ fun RenderBreakContinueButton(
   modifier: Modifier = Modifier,
   initialState: MainButtonState = MainButtonState.START,
 ) {
-  val buttonState = state.buttonState.collectAsState(initialState)
+  val buttonText = state.buttonState.map { it.name }.collectAsState(initialState.name)
   val buttonClickableFlow =
     state.isReady.combine(state.buttonEnabled) { ready, enabled -> ready && enabled }
   val buttonClickable = buttonClickableFlow.collectAsState(false)
@@ -415,40 +416,15 @@ fun RenderBreakContinueButton(
     else Grey50
   }.collectAsState(White90)
 
-  val buttonFont = TextStyle(
-    fontFamily = sixtyFour,
-    fontWeight = FontWeight.Bold,
-    fontSize = 23.sp,
-    lineHeight = 0.sp,
-    letterSpacing = 2.sp,
-    shadow = Shadow(color = Grey50, offset = Offset(6F, 6F), blurRadius = 0f)
-  )
-
-  val borderThickness = 3.dp
-
-  Box(
-    modifier = modifier
-      .clip(RoundedCornerShape(borderThickness * 2))
-      .background(Color.Black),
-    contentAlignment = Alignment.Center
+  RenderPrimaryButton(
+    buttonText,
+    enabled = buttonClickable,
+    textColor = textColor,
+    backgroundColor = backgroundColor,
+    borderColor = borderColor
   ) {
-    Button(
-      onClick = {
-        coroutineScope.launch {
-          state.clickButton()
-        }
-      },
-      enabled = buttonClickable.value,
-      border = BorderStroke(
-        width = borderThickness, color = borderColor.value
-      ),
-      colors = ButtonColors(backgroundColor.value, textColor.value, Grey90, textColor.value),
-      shape = RoundedCornerShape(borderThickness),
-      modifier = modifier.padding(borderThickness)
-    ) {
-      Text(
-        buttonState.value.name, style = buttonFont, modifier = modifier.padding(0.dp, 15.dp)
-      )
+    coroutineScope.launch {
+      state.clickButton()
     }
   }
 }
