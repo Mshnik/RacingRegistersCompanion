@@ -274,7 +274,10 @@ fun RenderTopBar(
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Button(
-      onClick = { navController.navigateUp() },
+      onClick = {
+        state.reset()
+        navController.navigateUp()
+      },
       enabled = true,
       colors = ButtonColors(
         Color.Black,
