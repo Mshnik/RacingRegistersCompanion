@@ -1,14 +1,11 @@
 package com.redpup.racingregisters.companion
 
-import kotlinx.coroutines.launch
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -31,11 +26,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -46,6 +39,7 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.redpup.racingregisters.companion.timer.Event
 import com.redpup.racingregisters.companion.timer.TimerViewModel
+import com.redpup.racingregisters.companion.ui.RenderSecondaryButton
 import com.redpup.racingregisters.companion.ui.theme.DarkRed90
 import com.redpup.racingregisters.companion.ui.theme.Green90
 import com.redpup.racingregisters.companion.ui.theme.Grey50
@@ -61,6 +55,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 /** State of the main action button on the main activity. */
 enum class MainButtonState {
@@ -263,7 +258,6 @@ fun RenderTopBar(
   state: GameState,
   navController: NavController,
 ) {
-  val size = 50.dp
   val enabled = state.resetButtonEnabled.collectAsState()
 
   Row(
@@ -273,48 +267,18 @@ fun RenderTopBar(
       .padding(20.dp),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
-    Button(
-      onClick = {
-        state.reset()
-        navController.navigateUp()
-      },
-      enabled = true,
-      colors = ButtonColors(
-        Color.Black,
-        Color.Black,
-        Color.Black,
-        Color.Black
-      ),
-      shape = CircleShape,
-      border = BorderStroke(width = 3.dp, color = Grey90),
-      modifier = Modifier.size(size),
-      contentPadding = PaddingValues(size * 0.2F)
+    RenderSecondaryButton(
+      R.drawable.back,
+      "Back Button"
     ) {
-      Image(
-        painter = painterResource(R.drawable.back),
-        contentDescription = "Back icon",
-        colorFilter = ColorFilter.tint(White90)
-      )
+      state.reset()
+      navController.navigateUp()
     }
-    Button(
-      onClick = { state.reset() },
-      enabled = enabled.value,
-      colors = ButtonColors(
-        Color.Black,
-        Color.Black,
-        Color.Black,
-        Color.Black
-      ),
-      shape = CircleShape,
-      border = BorderStroke(width = 3.dp, color = Grey90),
-      modifier = Modifier.size(size),
-      contentPadding = PaddingValues(size * 0.2F)
+    RenderSecondaryButton(
+      R.drawable.reset,
+      "Reset Button"
     ) {
-      Image(
-        painter = painterResource(R.drawable.reset),
-        contentDescription = "Reset icon",
-        colorFilter = if (enabled.value) ColorFilter.tint(White90) else ColorFilter.tint(Grey50)
-      )
+      state.reset()
     }
   }
 }
