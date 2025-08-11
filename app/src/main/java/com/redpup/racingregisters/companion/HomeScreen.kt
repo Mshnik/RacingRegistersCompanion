@@ -14,7 +14,9 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,7 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
+import com.redpup.racingregisters.companion.flow.ImmutableState
+import com.redpup.racingregisters.companion.flow.asState
 import com.redpup.racingregisters.companion.timer.TimerViewModel
+import com.redpup.racingregisters.companion.ui.RenderPrimaryButton
 import com.redpup.racingregisters.companion.ui.theme.Green90
 import com.redpup.racingregisters.companion.ui.theme.Grey50
 import com.redpup.racingregisters.companion.ui.theme.Grey90
@@ -75,7 +80,14 @@ fun RenderScreen(
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    RenderPlayGameButton(navController)
+    RenderPrimaryButton(
+      "PLAY",
+      textColor = Green90,
+      backgroundColor = Color.Black,
+      borderColor = Green90,
+    ) {
+      navController.navigate(Screen.Game.route)
+    }
   }
 }
 
@@ -109,46 +121,6 @@ fun RenderBackground(state: HomeState) {
           size = Size(barWidth, h + w)
         )
       }
-    }
-  }
-}
-
-@Composable
-fun RenderPlayGameButton(
-  navController: NavController,
-  modifier: Modifier = Modifier,
-) {
-  val buttonFont = TextStyle(
-    fontFamily = sixtyFour,
-    fontWeight = FontWeight.Bold,
-    fontSize = 23.sp,
-    lineHeight = 0.sp,
-    letterSpacing = 2.sp,
-    shadow = Shadow(color = Grey50, offset = Offset(6F, 6F), blurRadius = 0f)
-  )
-
-  val borderThickness = 3.dp
-
-  Box(
-    modifier = modifier
-      .clip(RoundedCornerShape(borderThickness * 2))
-      .background(Color.Black),
-    contentAlignment = Alignment.Center
-  ) {
-    Button(
-      onClick = {
-        navController.navigate(Screen.Game.route)
-      },
-      border = BorderStroke(
-        width = borderThickness, color = Green90
-      ),
-      colors = ButtonColors(Grey90, Green90, Grey90, Green90),
-      shape = RoundedCornerShape(borderThickness),
-      modifier = modifier.padding(borderThickness)
-    ) {
-      Text(
-        "PLAY", style = buttonFont, modifier = modifier.padding(0.dp, 15.dp)
-      )
     }
   }
 }
