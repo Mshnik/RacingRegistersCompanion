@@ -1,44 +1,28 @@
 package com.redpup.racingregisters.companion
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
-import com.redpup.racingregisters.companion.flow.ImmutableState
-import com.redpup.racingregisters.companion.flow.asState
 import com.redpup.racingregisters.companion.timer.TimerViewModel
 import com.redpup.racingregisters.companion.ui.RenderPrimaryButton
 import com.redpup.racingregisters.companion.ui.theme.Green90
-import com.redpup.racingregisters.companion.ui.theme.Grey50
 import com.redpup.racingregisters.companion.ui.theme.Grey90
-import com.redpup.racingregisters.companion.ui.theme.sixtyFour
+import com.redpup.racingregisters.companion.ui.theme.White90
 import kotlin.math.hypot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -77,7 +61,7 @@ fun RenderScreen(
     modifier = Modifier
       .fillMaxSize()
       .padding(10.dp),
-    verticalArrangement = Arrangement.Center,
+    verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     RenderPrimaryButton(
@@ -87,6 +71,14 @@ fun RenderScreen(
       borderColor = Green90,
     ) {
       navController.navigate(Screen.Game.route)
+    }
+    RenderPrimaryButton(
+      "SETTINGS",
+      textColor = White90,
+      backgroundColor = Color.Black,
+      borderColor = White90,
+    ) {
+      navController.navigate(Screen.Settings.route)
     }
   }
 }

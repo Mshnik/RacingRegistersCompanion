@@ -1,6 +1,5 @@
 package com.redpup.racingregisters.companion
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,16 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -48,7 +43,6 @@ import com.redpup.racingregisters.companion.ui.theme.Grey90
 import com.redpup.racingregisters.companion.ui.theme.Red90
 import com.redpup.racingregisters.companion.ui.theme.White90
 import com.redpup.racingregisters.companion.ui.theme.mPlus1Code
-import com.redpup.racingregisters.companion.ui.theme.sixtyFour
 import kotlin.math.hypot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -248,14 +242,14 @@ fun GameScreen(
   navController: NavController,
   lifecycleScope: CoroutineScope,
 ) {
-  Scaffold(topBar = { RenderTopBar(state, navController) }) { innerPadding ->
-    RenderBackground(state)
+  Scaffold(topBar = { RenderGameTopBar(state, navController) }) { innerPadding ->
+    RenderGameBackground(state)
     RenderScreen(state, lifecycleScope, Modifier.padding(innerPadding))
   }
 }
 
 @Composable
-fun RenderTopBar(
+fun RenderGameTopBar(
   state: GameState,
   navController: NavController,
 ) {
@@ -302,7 +296,7 @@ fun RenderScreen(state: GameState, coroutineScope: CoroutineScope, modifier: Mod
 }
 
 @Composable
-fun RenderBackground(state: GameState) {
+fun RenderGameBackground(state: GameState) {
   val numBarsTimes2 = state.numBackgroundBars * 2
   val hurryUpBarColor = state.isHurryUp.map { if (it) DarkRed90 else Grey90 }.collectAsState(Grey90)
   val shift = state.backgroundViewModel.shift.collectAsState(0F)
