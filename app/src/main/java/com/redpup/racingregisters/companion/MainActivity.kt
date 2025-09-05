@@ -42,11 +42,11 @@ class MainActivity : ComponentActivity() {
     )
 
     val gameState = GameState(
-      TimerViewModel(lifecycleScope, settingsState.getTimerDuration()),
-      settingsState.getHurryUpTime(),
+      TimerViewModel(lifecycleScope, settingsState.timerDuration()),
+      settingsState.hurryUpTime(),
       TimerViewModel(
         lifecycleScope,
-        settingsState.getTransitionDuration(),
+        settingsState.transitionDuration(),
         completeAtIncrements = 1,
         completionMessage = "GO!"
       ),

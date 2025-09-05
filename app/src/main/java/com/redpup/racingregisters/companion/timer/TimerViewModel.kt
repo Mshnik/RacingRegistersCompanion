@@ -235,18 +235,27 @@ class TimerViewModel(
       return completionMessage
     }
 
-    val minutes = remaining / 60
-    val increments = remaining % 60
-    if (minutes == 0) {
-      return "$increments"
-    } else if (increments < 10) {
-      return "${minutes}:0$increments"
-    } else {
-      return "${minutes}:$increments"
-    }
+    return TimerViewModel.formatTime(remaining)
   }
 
   val formattedTime: Flow<String> =
     remainingIncrements.map { formatTime(it - completeAtIncrements) }
       .distinctUntilChanged()
+
+  companion object {
+    /**
+     * Formats the time in seconds to a MM:ss string.
+     */
+    fun formatTime(remaining: Int): String {
+      val minutes = remaining / 60
+      val increments = remaining % 60
+      if (minutes == 0) {
+        return "$increments"
+      } else if (increments < 10) {
+        return "${minutes}:0$increments"
+      } else {
+        return "${minutes}:$increments"
+      }
+    }
+  }
 }
