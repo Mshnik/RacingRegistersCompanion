@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.redpup.racingregisters.companion.timer.TimerViewModel
 import com.redpup.racingregisters.companion.ui.theme.RacingRegistersCompanionTheme
+import kotlinx.coroutines.flow.flow
 
 /** Different screens in the app. */
 sealed class Screen(val route: String) {
@@ -28,22 +29,23 @@ class MainActivity : ComponentActivity() {
     val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
 
     val homeState = HomeState(
-      TimerViewModel(0, countDown = false),
+      TimerViewModel(lifecycleScope, 0),
       coroutineScope = lifecycleScope,
       numBackgroundBars = numBackgroundBars
     )
 
     val settingsState = SettingsState(
       baseContext.resources,
-      TimerViewModel(0, countDown = false),
+      TimerViewModel(lifecycleScope, 0),
       coroutineScope = lifecycleScope,
       numBackgroundBars = numBackgroundBars
     )
 
     val gameState = GameState(
-      TimerViewModel(settingsState.getTimerDuration()),
+      TimerViewModel(lifecycleScope, settingsState.getTimerDuration()),
       settingsState.getHurryUpTime(),
       TimerViewModel(
+        lifecycleScope,
         settingsState.getTransitionDuration(),
         completeAtIncrements = 1,
         completionMessage = "GO!"

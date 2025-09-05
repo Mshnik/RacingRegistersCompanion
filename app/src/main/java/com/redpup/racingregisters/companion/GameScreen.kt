@@ -44,6 +44,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -66,7 +67,7 @@ enum class RunState {
 /** Wrapper on mutable state visually displayed in this screen.*/
 class GameState(
   val timer: TimerViewModel,
-  val hurryUp: Int,
+  hurryUp: Flow<Int>,
   val transitionTimer: TimerViewModel,
   val music: BackgroundMusic,
   val soundEffects: SoundEffects,
@@ -97,7 +98,9 @@ class GameState(
   val isRunning = MutableStateFlow(false)
 
   /** Whether this is currently in hurry up state. */
-  val isHurryUp = timer.remainingIncrements.map { it <= hurryUp }
+  val isHurryUp =
+    timer.remainingIncrements.combine(hurryUp) { remaining, hurry -> remaining <= hurry }
+      .distinctUntilChanged()
 
   /** The current button state. */
   val buttonState = MutableStateFlow(MainButtonState.START)

@@ -18,6 +18,10 @@ import com.redpup.racingregisters.companion.ui.BackgroundViewModel
 import com.redpup.racingregisters.companion.ui.RenderBackground
 import com.redpup.racingregisters.companion.ui.RenderSecondaryButton
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 
 /** Wrapper on mutable state visually displayed in this screen.*/
@@ -38,13 +42,13 @@ class SettingsState(
   }
 
   /** Returns [timerDuration]. */
-  fun getTimerDuration() = timerDuration
+  fun getTimerDuration(): StateFlow<Int> = MutableStateFlow(timerDuration)
 
   /** Returns [hurryUpTime]. */
-  fun getHurryUpTime() = hurryUpTime
+  fun getHurryUpTime(): StateFlow<Int> = MutableStateFlow(hurryUpTime)
 
   /** Returns [transitionDuration]. */
-  fun getTransitionDuration() = transitionDuration
+  fun getTransitionDuration(): StateFlow<Int> = MutableStateFlow(transitionDuration)
 }
 
 @Composable
