@@ -36,6 +36,12 @@ class MainActivity : ComponentActivity() {
       numBackgroundBars = numBackgroundBars
     )
 
+    val settingsState = SettingsState(
+      TimerViewModel(0, countDown = false),
+      coroutineScope = lifecycleScope,
+      numBackgroundBars = numBackgroundBars
+    )
+
     val gameState = GameState(
       TimerViewModel(timerDuration),
       hurryUpTime,
@@ -60,7 +66,7 @@ class MainActivity : ComponentActivity() {
             GameScreen(gameState, navController, lifecycleScope)
           }
           composable(Screen.Settings.route) {
-            SettingsScreen(navController)
+            SettingsScreen(settingsState, navController)
           }
         }
       }
