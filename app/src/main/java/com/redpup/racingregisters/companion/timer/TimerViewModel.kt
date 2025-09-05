@@ -12,9 +12,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+
+/**
+ * Events that can occur on a timer.
+ * Any state change related to the event has already occurred before subscribers are called.
+ */
+enum class Event {
+  TICK,
+  SECOND,
+  ACTIVATE,
+  DEACTIVATE,
+  COMPLETE,
+  FINISH
+}
 
 /** Constructor overload for [TimerViewModel] that takes a constant [initialIncrements]. */
 fun TimerViewModel(

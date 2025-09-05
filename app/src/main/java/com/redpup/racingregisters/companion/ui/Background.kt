@@ -40,6 +40,7 @@ class BackgroundViewModel(
 }
 
 /** Renders the background with moving bars. */
+// TODO: Fix issue on reset. (Bars go way off screen?)
 @Composable
 fun RenderBackground(
   viewModel: BackgroundViewModel,
