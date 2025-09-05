@@ -25,9 +25,6 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-    val timerDuration = baseContext.resources.getInteger(R.integer.timer_duration_seconds)
-    val hurryUpTime = baseContext.resources.getInteger(R.integer.timer_hurry_up_seconds)
-    val transitionDuration = baseContext.resources.getInteger(R.integer.transition_duration_seconds)
     val numBackgroundBars = baseContext.resources.getInteger(R.integer.num_background_bars)
 
     val homeState = HomeState(
@@ -37,15 +34,20 @@ class MainActivity : ComponentActivity() {
     )
 
     val settingsState = SettingsState(
+      baseContext.resources,
       TimerViewModel(0, countDown = false),
       coroutineScope = lifecycleScope,
       numBackgroundBars = numBackgroundBars
     )
 
     val gameState = GameState(
-      TimerViewModel(timerDuration),
-      hurryUpTime,
-      TimerViewModel(transitionDuration, completeAtIncrements = 1, completionMessage = "GO!"),
+      TimerViewModel(settingsState.getTimerDuration()),
+      settingsState.getHurryUpTime(),
+      TimerViewModel(
+        settingsState.getTransitionDuration(),
+        completeAtIncrements = 1,
+        completionMessage = "GO!"
+      ),
       music = BackgroundMusic(baseContext),
       soundEffects = SoundEffects(baseContext),
       coroutineScope = lifecycleScope,
