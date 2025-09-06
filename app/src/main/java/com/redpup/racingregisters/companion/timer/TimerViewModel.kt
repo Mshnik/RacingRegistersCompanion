@@ -243,18 +243,16 @@ class TimerViewModel(
       .distinctUntilChanged()
 
   companion object {
-    /**
-     * Formats the time in seconds to a MM:ss string.
-     */
+    /** Formats the time in seconds to a MM:ss string. */
     fun formatTime(remaining: Int): String {
       val minutes = remaining / 60
       val increments = remaining % 60
-      if (minutes == 0) {
-        return "$increments"
+      return if (minutes == 0) {
+        "$increments"
       } else if (increments < 10) {
-        return "${minutes}:0$increments"
+        "${minutes}:0$increments"
       } else {
-        return "${minutes}:$increments"
+        "${minutes}:$increments"
       }
     }
   }

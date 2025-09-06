@@ -50,18 +50,18 @@ class SettingsState(
     }
   }
 
-  internal val _timerDuration = MutableStateFlow(initialTimerDuration)
-  internal val _hurryUpTime = MutableStateFlow(initialHurryUpTime)
-  internal val _transitionDuration = MutableStateFlow(initialTransitionDuration)
+  internal val timerDuration_ = MutableStateFlow(initialTimerDuration)
+  internal val hurryUpTime_ = MutableStateFlow(initialHurryUpTime)
+  internal val transitionDuration_ = MutableStateFlow(initialTransitionDuration)
 
-  /** Returns [_timerDuration]. */
-  fun timerDuration(): StateFlow<Int> = _timerDuration
+  /** Returns [timerDuration_]. */
+  fun timerDuration(): StateFlow<Int> = timerDuration_
 
-  /** Returns [hurryUpTime]. */
-  fun hurryUpTime(): StateFlow<Int> = _hurryUpTime
+  /** Returns [hurryUpTime_]. */
+  fun hurryUpTime(): StateFlow<Int> = hurryUpTime_
 
-  /** Returns [transitionDuration]. */
-  fun transitionDuration(): StateFlow<Int> = _transitionDuration
+  /** Returns [transitionDuration_]. */
+  fun transitionDuration(): StateFlow<Int> = transitionDuration_
 }
 
 @Composable
@@ -105,7 +105,7 @@ fun RenderSettingsScreen(state: SettingsState) {
     verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    RenderSlider(state._timerDuration, state.initialTimerDuration, 20, 1.0f..20.0f)
+    RenderSlider(state.timerDuration_, state.initialTimerDuration, 20, 2.0f..20.0f)
   }
 }
 
